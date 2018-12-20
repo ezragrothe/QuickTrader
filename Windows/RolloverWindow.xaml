@@ -1,0 +1,26 @@
+﻿<my:BaseWindow x:Class="RolloverWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:my="clr-namespace:QuickTrader"
+    Title="Rollover" Height="355" Width="343" Loaded="BaseWindow_Loaded">
+    <Grid Margin="3">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Margin="3"  Text="Expiry dates for " Name="txtHeader" />
+        <ListBox Grid.Row="1" Margin="3" Name="lstExpiries" />
+        <Grid Grid.Row="2" Margin="3" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button Content="Refresh" Grid.Column="0" MinWidth="52"  Margin="3" MinHeight="23" Name="btnRefresh" Click="btnRefresh_Click"/>
+            <Button Content="Rollover Symbol" Grid.Column="2" Margin="3" MinWidth="102" MinHeight="23" IsDefault="True" Name="btnOK" Click="btnOK_Click" />
+            <Button Content="Cancel" Grid.Column="3" Margin="3" MinWidth="82" MinHeight="23" IsCancel="True" Name="btnCancel" Click="btnCancel_Click"/>
+        </Grid>
+    </Grid>
+</my:BaseWindow>

@@ -1,0 +1,49 @@
+﻿<my:BaseWindow x:Class="ConfigureKeysWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:my="clr-namespace:QuickTrader"
+    Title="Hotkeys" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		MinHeight="209" MinWidth="266" Height="447" Width="466" Loaded="Window_Loaded" PreviewKeyDown="Grid_PreviewKeyDown" ResizeMode="CanResizeWithGrip" ShowInTaskbar="False">
+    <Grid Margin="10" >
+		<Grid.RowDefinitions>
+			<RowDefinition Height="auto"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="auto"/>
+			<RowDefinition Height="auto"/>
+			<RowDefinition Height="auto"/>
+			<RowDefinition Height="auto"/>
+		</Grid.RowDefinitions>
+		
+		<TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Name="lbl1" ClipToBounds="false">Commands</TextBlock>
+		<TextBox HorizontalAlignment="Right" Name="txtSearch" Margin="70,0,0,0" Text="" MinWidth="55" VerticalAlignment="Center" Foreground="Gray" BorderBrush="#FFEFEBDE" GotFocus="txtSearch_GotFocus" LostFocus="txtSearch_LostFocus" TextChanged="txtSearch_TextChanged" Cursor="Arrow"  />
+		<ListBox Grid.Row="1" Margin="0,2,0,0" Name="lstCommands" SelectionChanged="lstCommands_SelectionChanged" FontSize="11" />
+		<Border Grid.Row="2" BorderBrush="Black" BorderThickness="1" CornerRadius="3" Margin="0,3,0,0">
+			<TextBox IsReadOnly="true" Cursor="Arrow" BorderThickness="0" Name="lblInfo" Margin="2,0,2,0" TextWrapping="Wrap" VerticalAlignment="Center" />
+		</Border>
+		<Grid Grid.Row="3">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="auto" />
+			</Grid.ColumnDefinitions>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="auto" />
+				<RowDefinition Height="auto" />
+			</Grid.RowDefinitions>
+			<TextBlock Text="Modifier" Margin="0,5,0,2" TextWrapping="Wrap"/>
+			<ComboBox Grid.Row="2" Name="lstModifier" Margin="0,0,5,0" SelectedIndex="0" SelectionChanged="ComboBox_SelectionChanged" />
+			<TextBlock Grid.Column="1" Text="Key" Margin="0,5,0,2" TextWrapping="Wrap"/>
+			<ComboBox Grid.Row="2" Grid.Column="1" Name="lstKey" Margin="0,0,5,0" SelectedIndex="0" SelectionChanged="ComboBox_SelectionChanged"/>
+			<TextBlock Grid.Column="2" Text="Hotkey display text" Margin="0,5,0,2" TextWrapping="Wrap"/>
+			<TextBox Grid.Column="2" Grid.Row="2" Name="txtDisplayText" Margin="0,0,5,0" TextChanged="txtDisplayText_TextChanged" IsEnabled="{Binding ElementName=btnAssign,Path=IsEnabled}" />
+			<Button Grid.Column="3" Grid.Row="2" Content="Assign" Height="24" Width="80" IsEnabled="false" Name="btnAssign" Click="btnAssign_Click"/>
+		</Grid>
+
+		<TextBox Grid.Row="4" Margin="0,5,85,0" Foreground="Red" BorderBrush="black" Visibility="Collapsed" Name="txtHotkeyTaken" IsReadOnly="True" Cursor="Arrow" VerticalContentAlignment="Center" />
+		<Button Grid.Row="4" HorizontalAlignment="Right" Margin="0,4,0,0" Width="80" Height="24" Content="Clear conflict" Visibility="Collapsed" Name="btnClearConflict" Click="btnClearConflict_Click" IsDefault="False" />
+		
+		<Button Grid.Row="5" Content="OK" Margin="5,5,0,0" Height="24" Name="btnOK" Width="72" HorizontalAlignment="Right"  Click="btnOK_Click" IsDefault="True" />
+		<CheckBox Grid.Row="5" Content="Listen to key presses" IsChecked="True" Name="chkListen" HorizontalAlignment="Left" VerticalAlignment="Center"  />
+	</Grid>
+</my:BaseWindow>

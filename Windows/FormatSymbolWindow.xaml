@@ -1,0 +1,164 @@
+﻿<my:BaseWindow x:Class="FormatSymbolWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
+    xmlns:col="clr-namespace:System.Collections.Generic;assembly=mscorlib"
+	xmlns:my="clr-namespace:QuickTrader"
+    Title="Format Symbol" MinHeight="196" MinWidth="600" Height="604" Width="420" ShowInTaskbar="False">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Name="col1" />
+            <ColumnDefinition Name="col2" />
+        </Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+        <GroupBox Grid.Row="0" Margin="3" Header="Selected Symbol" Cursor="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Cursor}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Cursor="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Cursor}" >
+                <Grid Cursor="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Cursor}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="33*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Margin="3" Grid.Row="0" VerticalAlignment="Center" Text="Symbol" />
+                    <TextBox Grid.Column="1" Grid.Row="0" Margin="3" VerticalContentAlignment="Center" Name="txtSymbol" CharacterCasing="Upper" TextChanged="txtSymbol_TextChanged" />
+                    <TextBlock Margin="3" Grid.Row="1" VerticalAlignment="Center" Text="Contract ID" />
+                    <ComboBox Grid.Column="2" Margin="3" Grid.Row="1" Name="txtContractID" IsEditable="True" />
+                    <TextBlock Margin="3" Grid.Row="2" VerticalAlignment="Center" Text="Min Tick" />
+                    <ComboBox Grid.Column="2" Margin="3" Grid.Row="2" Name="txtMinTick" IsEditable="True" />
+                    <TextBlock Grid.Row="3" Margin="3" VerticalAlignment="Center" Text="Type" />
+                    <ComboBox Grid.Column="2" Grid.Row="3" Margin="3" Name="cboType" SelectionChanged="cboType_SelectionChanged" IsEditable="false" />
+                    <TextBlock Grid.Row="4" Margin="3" VerticalAlignment="Center" Text="Contract Month" />
+                    <Grid Grid.Row="4" Grid.Column="2" Margin="3">
+                        <!--<ComboBox Name="cboConMonth" IsEditable="False" Visibility="Collapsed" />-->
+                        <DatePicker Text="MMM DD yyyy" Name="contractMonth" />
+                    </Grid>
+                    <TextBlock Grid.Row="5" Margin="3" VerticalAlignment="Center" Text="Strike" />
+                    <ComboBox Grid.Column="2" Grid.Row="5" Margin="3" Name="txtStrike" IsEditable="True" />
+                    <TextBlock Grid.Row="7" Margin="3" VerticalAlignment="Center" Text="Multiplier" />
+                    <ComboBox Grid.Column="2" Grid.Row="7" Margin="3" Name="txtMultiplier" IsEditable="True" />
+                    <TextBlock Grid.Row="8" Margin="3" VerticalAlignment="Center" Text="Exchange" />
+                    <ComboBox Grid.Column="2" Grid.Row="8" Margin="3" Name="txtExchange" IsEditable="True" />
+                    <TextBlock Grid.Row="9" Margin="3" VerticalAlignment="Center" Text="Primary Exchange" />
+                    <ComboBox Grid.Column="2" Grid.Row="9" Margin="3" Name="txtPrimaryExchange" IsEditable="True" />
+                    <TextBlock Grid.Row="10" Margin="3" VerticalAlignment="Center" Text="Currency" />
+                    <ComboBox Grid.Column="2" Grid.Row="10" Margin="3" Name="txtCurrency" IsEditable="True" />
+                    <TextBlock Grid.Row="12" Margin="3" VerticalAlignment="Center" Text="Include Expired" />
+                    <CheckBox Grid.Column="2" Grid.Row="12" Margin="3" Name="chkExpired" />
+                    <TextBlock Grid.Row="13" Margin="3" VerticalAlignment="Center" Text="What to Show" />
+                    <ComboBox Grid.Column="2" Grid.Row="13" Margin="3" Name="cboWhatToShow" IsEditable="False" />
+                    
+                    <GroupBox Grid.Row="14" Grid.ColumnSpan="2" Margin="3" Header="Custom Time Range" >
+                        <Grid>
+                            <Grid.RowDefinitions >
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Row="0" Margin="3" VerticalAlignment="Center" Text="Weekdays" />
+                            <TextBox Grid.Column="1" Grid.Row="0" Margin="3" Name="cboWeekdayStartTime" />
+                            <TextBlock Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="3" Text="-" />
+                            <TextBox Grid.Column="3" Grid.Row="0" Margin="3" Name="cboWeekdayEndTime" />
+                            <TextBlock Grid.Row="1" Margin="3" VerticalAlignment="Center" Text="Sundays" />
+                            <TextBox Grid.Column="1" Grid.Row="1" Margin="3" Name="cboSundayStartTime" />
+                            <TextBlock Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="3" Text="-" />
+                            <TextBox Grid.Column="3" Grid.Row="1" Margin="3" Name="cboSundayEndTime" />
+                        </Grid>
+                    </GroupBox>
+                                        
+                    <CheckBox Grid.Row="17" Grid.ColumnSpan="3" Margin="3" Name="chkUseRegular" Content="Use Regular Trading Hour Data Only" />
+                    <!--<GroupBox Grid.Row="14" Grid.ColumnSpan="3" Margin="3">
+                        <GroupBox.Header>
+                            
+                        </GroupBox.Header>
+                        <Grid Grid.Row="11" Grid.Column="2" IsEnabled="{Binding ElementName=chkUseRegular, Path=IsChecked}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Margin="3" VerticalAlignment="Center" Text="Start Time" />
+                            <ComboBox Grid.Row="0" Grid.Column="1" Margin="3" Name="cboStartTimeHour" />
+                            <ComboBox Grid.Row="0" Grid.Column="2" Margin="3" Name="cboStartTimeMinute" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" Margin="3" VerticalAlignment="Center" Text="End Time" />
+                            <ComboBox Grid.Row="1" Grid.Column="1" Margin="3" Name="cboEndTimeHour" />
+                            <ComboBox Grid.Row="1" Grid.Column="2" Margin="3" Name="cboEndTimeMinute" />
+                            <Button Grid.Row="2" Grid.ColumnSpan="3" Margin="3" HorizontalAlignment="Right" Name="btnUseLiquidHours" Content="Use Liquid Hours" />
+                        </Grid>
+                    </GroupBox>-->
+                    
+                </Grid>
+            </ScrollViewer>
+        </GroupBox>
+        <GroupBox Header="Find Symbol" Grid.Column="1" Margin="3" Name="grpFindSymbol" Cursor="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Cursor}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <TextBox Grid.Column="0" Grid.Row="0" Margin="3" VerticalContentAlignment="Center" Name="txtLookUpSymbol" CharacterCasing="Upper" Cursor="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Cursor}" />
+                <Button Grid.Column="2" Grid.Row="0" Margin="3" Padding="5,1" MinWidth="80" MinHeight="23" Name="btnLookUpSymbol" Content="Look Up" Click="btnLookUpSymbol_Click" Cursor="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Cursor}" IsDefault="True" />
+                <ComboBox Grid.Column="1" Grid.Row="0" Margin="3" Name="cboSearchType" IsEditable="false" MinWidth="70" />
+                <Border Grid.Row="1" Grid.ColumnSpan="3" BorderThickness="0,1,0,0" BorderBrush="Silver">
+                    <TreeView Name="treeSymbols" Cursor="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Cursor}">
+                                
+                    </TreeView>
+                </Border>
+            </Grid>
+        </GroupBox>
+        <Grid Grid.Row="5" Grid.ColumnSpan="3" Margin="7" VerticalAlignment="Center" HorizontalAlignment="Right" Cursor="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window, AncestorLevel=1}, Path=Cursor}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button Content="OK" Margin="3" MinWidth="82" MinHeight="23" IsDefault="True" Name="btnOK" Click="btnOK_Click" />
+            <Button Content="Cancel" Grid.Column="1" Margin="3" MinWidth="82" MinHeight="23" IsCancel="True" Name="btnCancel" Click="btnCancel_Click" />
+        </Grid>
+        <CheckBox Grid.Row="5" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,0,10,10" Content="Set As Default" Name="chkDefault" />
+	</Grid>
+</my:BaseWindow>

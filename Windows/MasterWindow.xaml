@@ -1,0 +1,6 @@
+﻿<Window x:Class="MasterWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:my="clr-namespace:QuickTrader"
+    WindowStyle="None" AllowsTransparency="True" Opacity="0" ShowInTaskbar="False" Width="0" Height="0" Focusable="False" >
+</Window>

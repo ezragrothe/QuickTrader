@@ -1,0 +1,36 @@
+﻿<Window x:Class="AboutWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TextOptions.TextFormattingMode="Display" 
+    Title="" WindowStyle="None" AllowsTransparency="True" ShowInTaskbar="False" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Topmost="True" Background="Transparent" Opacity="1">
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="Window.Loaded">
+            <EventTrigger.Actions>
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.4" />
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger.Actions>
+        </EventTrigger>
+    </Window.Triggers>
+    <Border CornerRadius="20" Height="253" Width="549" PreviewMouseLeftButtonDown="Border_PreviewMouseLeftButtonDown">
+        <Border.Background>
+            <RadialGradientBrush Center="0.5,0" GradientOrigin="0.5,0" RadiusY="1.5" RadiusX="1.5">
+                <GradientStop Color="#FFA5A5A5" Offset="1" />
+                <GradientStop Color="WhiteSmoke" Offset="0" />
+            </RadialGradientBrush>
+        </Border.Background>
+        <Grid>
+            <Image Height="226" HorizontalAlignment="Left" Margin="12,12,0,0" Name="Image1" Stretch="Fill" VerticalAlignment="Top" Width="241" Source="/QuickTrader;component/Images/icon_large.png" />
+            <Label Content="QuickTrader" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="252,12,0,0" FontSize="24" />
+            <Label Content="v2.3.25" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Bottom" Margin="260,212,0,0" FontSize="13" Name="lblVersion" />
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Margin="316,219,124,17">
+                <Hyperlink Name="link">View Update History</Hyperlink>
+            </TextBlock>
+            <TextBlock Text="Graphical and analytical program for market data." TextWrapping="Wrap" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="260,59,0,0" FontSize="12" />
+            <TextBlock Text="Send bugs, questions and comments to ezragrothe@yahoo.com." TextWrapping="Wrap" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="260,90,0,0" FontSize="12" />
+            <TextBlock Text="Copyright © Ezra Grothe 2011-2012." HorizontalAlignment="Left" VerticalAlignment="Top" Margin="260,140,0,0" FontSize="12" Visibility="Hidden" />
+            <Button Content="Close" Height="23" HorizontalAlignment="Left" Margin="459,215,0,0" Name="Button1" VerticalAlignment="Top" Width="75" />
+        </Grid>
+    </Border>
+</Window>

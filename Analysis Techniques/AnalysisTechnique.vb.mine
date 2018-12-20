@@ -1,0 +1,245 @@
+﻿Imports System.Collections.ObjectModel
+Namespace AnalysisTechniques
+
+    Public MustInherit Class AnalysisTechnique
+        Private ReadOnly _chart As Chart
+
+        Public Sub New(ByVal chart As Chart)
+            Me._chart = chart
+        End Sub
+        Protected ReadOnly Property Chart As Chart
+            Get
+                Return _chart
+            End Get
+        End Property
+        Protected ReadOnly Property Bars(ByVal index As Integer) As BarData
+            Get
+                Return Chart.bars(index).Data
+            End Get
+        End Property
+        Protected Property DrawVisuals As Boolean = True
+        Private _currentBar As BarData
+        Protected ReadOnly Property CurrentBar As BarData
+            Get
+                If loadingHistory Then
+                    Return _currentBar
+                Else
+                    If Chart.bars.Count > 0 Then
+                        Return Chart.bars(Chart.bars.Count - 1).Data
+                    Else
+                        Return Nothing
+                    End If
+                End If
+            End Get
+        End Property
+        Public ReadOnly Property Inputs As ReadOnlyCollection(Of Input)
+            Get
+                Dim lst As New List(Of Input)
+                For Each prop In Me.GetType.GetProperties
+                    For Each attribute In prop.GetCustomAttributes(False)
+                        If TypeOf attribute Is InputAttribute Then
+                            lst.Add(New Input(Me, prop))
+                            Exit For
+                        End If
+                    Next
+                Next
+                Return New ReadOnlyCollection(Of Input)(lst)
+            End Get
+        End Property
+
+        Protected Sub SetLabelBar(ByVal lbl As Label, ByVal value As Integer)
+            lbl.Location = New Point(value, lbl.Location.Y)
+            lbl.RefreshVisual()
+        End Sub
+        Protected Sub SetLabelPrice(ByVal lbl As Label, ByVal value As Decimal)
+            lbl.Location = New Point(lbl.Location.X, value)
+            lbl.RefreshVisual()
+        End Sub
+        Protected Sub SetTLBeginBar(ByVal tl As TrendLine, ByVal value As Integer)
+            tl.StartPoint = New Point(value, tl.StartPoint.Y)
+            'tl.RefreshVisual()
+        End Sub
+        Protected Sub SetTLEndBar(ByVal tl As TrendLine, ByVal value As Integer)
+            tl.EndPoint = New Point(value, tl.EndPoint.Y)
+            'tl.RefreshVisual()
+        End Sub
+        Protected Sub SetTLBeginPrice(ByVal tl As TrendLine, ByVal value As Decimal)
+            tl.StartPoint = New Point(tl.StartPoint.X, value)
+            'tl.RefreshVisual()
+        End Sub
+        Protected Sub SetTLEndPrice(ByVal tl As TrendLine, ByVal value As Decimal)
+            tl.EndPoint = New Point(tl.EndPoint.X, value)
+            'tl.RefreshVisual()
+        End Sub
+        Protected Sub RemoveObjectFromChart(ByVal [object] As ChartDrawingVisual)
+            If IsLastBarOnChart Then
+                Chart.Children.Remove([object])
+            End If
+            objectsToAdd.Remove([object])
+        End Sub
+        Protected Sub AddObjectToChart(ByVal [object] As ChartDrawingVisual)
+            If IsLastBarOnChart Then
+                If [object] IsNot Nothing AndAlso [object].Parent Is Nothing Then Chart.Children.Add([object])
+            Else
+                If [object] IsNot Nothing AndAlso Not objectsToAdd.Contains([object]) Then objectsToAdd.Add([object])
+            End If
+        End Sub
+        Protected Sub RefreshObject(ByVal [object] As ChartDrawingVisual)
+            If IsLastBarOnChart And Not loadingHistory Then [object].RefreshVisual()
+        End Sub
+        Private objectsToAdd As List(Of DrawingVisual)
+        Protected Function NewTrendLine(ByVal color As Color, ByVal point1 As Point, ByVal point2 As Point, Optional ByVal addToChart As Boolean = True) As TrendLine
+            Dim line As New TrendLine
+            line.AutoRefresh = False
+            line.UseNegativeCoordinates = False
+            'line.IsEditable = False
+            'line.IsSelectable = False
+            line.Pen = New Pen(New SolidColorBrush(color), 1)
+            line.StartPoint = point1
+            line.EndPoint = point2
+            line.AnalysisTechnique = Me
+            If IsLastBarOnChart Then
+                line.DrawVisual = True
+                line.AutoRefresh = True
+                If addToChart Then Chart.Children.Add(line)
+            Else
+                line.DrawVisual = False
+                If addToChart Then objectsToAdd.Add(line)
+            End If
+            Return line
+        End Function
+        Protected Function NewLabel(ByVal text As String, ByVal foreground As Color, ByVal location As Point, Optional ByVal addToChart As Boolean = True) As Label
+            Dim label As New Label
+            label.AutoRefresh = False
+            label.UseNegativeCoordinates = False
+            'label.IsEditable = false
+            'label.IsSelectable = false
+            label.Text = text
+            label.AnalysisTechnique = Me
+            label.Font.Brush = New SolidColorBrush(foreground)
+            label.Location = New Point(location.X, location.Y)
+            If IsLastBarOnChart Then
+                label.DrawVisual = True
+                label.AutoRefresh = True
+                If addToChart Then Chart.Children.Add(label)
+            Else
+                label.DrawVisual = False
+                If addToChart Then objectsToAdd.Add(label)
+            End If
+            Return label
+        End Function
+
+        Protected ReadOnly Property IsNewBar As Boolean
+            Get
+                Return Chart.IsNewBar
+            End Get
+        End Property
+
+        Protected ReadOnly Property Price As Double
+            Get
+                Return CurrentBar.Close
+            End Get
+        End Property
+        Private _lastBarOnChart As Boolean
+        Protected ReadOnly Property IsLastBarOnChart As Boolean
+            Get
+                Return _lastBarOnChart
+            End Get
+        End Property
+        Private loadingHistory As Boolean
+        Public Sub HistoryLoaded()
+            For Each item In objectsToAdd
+                If item.Parent Is Nothing Then Chart.Children.Add(item)
+                CType(item, DrawingVisual).DrawVisual = True
+                CType(item, DrawingVisual).AutoRefresh = True
+                CType(item, DrawingVisual).RefreshVisual()
+            Next
+        End Sub
+
+        Friend Overridable Sub OnCreate()
+
+        End Sub
+
+
+        Public Sub Update(ByVal price As Decimal)
+            loadingHistory = False
+            If IsEnabled Then Main()
+        End Sub
+        Public Sub Update(ByVal bar As BarData)
+            loadingHistory = True
+            _lastBarOnChart = Chart.bars(Chart.bars.Count - 1).Data.Equals(bar)
+            _currentBar = bar
+            If IsEnabled Then
+                'Try
+                Main()
+                'Catch ex As Exception
+                '    'Chart.RemoveAnalysisTechnique(Me)
+                '    If ShowInfoBox(Name & " encountered an error, and has been disabled.", Chart.DesktopWindow, "OK", "Details") = 1 Then
+                '        ShowInfoBox(ex.Message & vbNewLine & ex.StackTrace, Chart.DesktopWindow)
+                '    End If
+                '    IsEnabled = False
+                'End Try
+
+                'For Each child In Chart.Children
+                '    If TypeOf child Is TrendLine Then
+                '        CType(child, TrendLine).RefreshVisual()
+                '    End If
+                'Next
+                'DispatcherHelper.DoEvents()
+                ' System.Threading.Thread.Sleep(200)
+            End If
+        End Sub
+        Public Sub UpdateNewBar()
+            If IsEnabled Then
+                'Try
+                NewBar()
+                'Catch ex As Exception
+                '    IsEnabled = False
+                '    Chart.RemoveAnalysisTechnique(Me)
+                '    If ShowInfoBox(Name & " has encountered an error on a new bar.", Chart.DesktopWindow, "OK", "Details") = 1 Then
+                '        ShowInfoBox(ex.Message & vbNewLine & ex.StackTrace, Chart.DesktopWindow)
+                '    End If
+                'End Try
+            End If
+        End Sub
+        Protected Overridable Sub NewBar()
+
+        End Sub
+
+        Public Overridable Sub Reset()
+            Dim i As Integer
+            While i < Chart.Children.Count
+                If Chart.Children(i).AnalysisTechnique Is Me Then
+                    Chart.Children.RemoveAt(i)
+                Else
+                    i += 1
+                End If
+            End While
+            loadingHistory = True
+            _lastBarOnChart = False
+            If Chart.bars.Count > 0 Then _currentBar = Chart.bars(0).Data
+            'Try
+            Begin()
+            'Catch ex As Exception
+            '    If ShowInfoBox(Name & " has encountered an error on reset.", Chart.DesktopWindow, "OK", "Details") = 1 Then
+            '        ShowInfoBox(ex.Message & vbNewLine & ex.StackTrace, Chart.DesktopWindow)
+            '    End If
+            'End Try
+            'Dim t = Now
+            'GC.Collect()
+            'ShowInfoBox((Now - t).TotalMilliseconds)
+        End Sub
+        Public Property IsEnabled As Boolean
+
+        Public Property Description As String = ""
+
+        Protected MustOverride Sub Main()
+        Protected Overridable Sub Begin()
+            objectsToAdd = New List(Of DrawingVisual)
+        End Sub
+        Public MustOverride Property Name As String
+
+
+    End Class
+
+End Namespace

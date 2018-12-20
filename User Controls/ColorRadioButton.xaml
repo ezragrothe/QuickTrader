@@ -1,0 +1,60 @@
+﻿<RadioButton x:Class="ColorRadioButton"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+			 xmlns:my="clr-namespace:QuickTrader"
+             mc:Ignorable="d" 
+			 Width="22" Height="22" >
+	<RadioButton.Template>
+		<ControlTemplate TargetType="RadioButton" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+			<Grid Name="grd" Margin="1" SnapsToDevicePixels="True">
+				<Border BorderBrush="Black" BorderThickness="0" CornerRadius="1" Name="bd" SnapsToDevicePixels="True" >
+					<Border Margin="0" Background="{TemplateBinding my:ColorRadioButton.ColorBrush}" CornerRadius="2" Name="clrBd" SnapsToDevicePixels="True" />
+				</Border>
+			</Grid>
+			<ControlTemplate.Triggers>
+				<MultiTrigger>
+					<MultiTrigger.Conditions>
+						<Condition Property="RadioButton.IsChecked" Value="True" />
+						<Condition Property="RadioButton.IsMouseOver" Value="False" />
+					</MultiTrigger.Conditions>
+					<MultiTrigger.Setters>
+						<Setter TargetName="bd" Property="BorderThickness" Value="2" />
+						<Setter TargetName="clrBd" Property="Margin" Value="1" />
+					</MultiTrigger.Setters>
+				</MultiTrigger>
+				<MultiTrigger>
+					<MultiTrigger.Conditions>
+						<Condition Property="RadioButton.IsChecked" Value="False" />
+						<Condition Property="RadioButton.IsMouseOver" Value="False" />
+					</MultiTrigger.Conditions>
+					<MultiTrigger.Setters>
+						<Setter TargetName="bd" Property="BorderThickness" Value="0" />
+						<Setter TargetName="clrBd" Property="Margin" Value="0" />
+					</MultiTrigger.Setters>
+				</MultiTrigger>
+				<MultiTrigger>
+					<MultiTrigger.Conditions>
+						<Condition Property="RadioButton.IsChecked" Value="False" />
+						<Condition Property="RadioButton.IsMouseOver" Value="True" />
+					</MultiTrigger.Conditions>
+					<MultiTrigger.Setters>
+						<Setter TargetName="bd" Property="BorderThickness" Value="1" />
+						<Setter TargetName="clrBd" Property="Margin" Value="1" />
+					</MultiTrigger.Setters>
+				</MultiTrigger>
+				<MultiTrigger>
+					<MultiTrigger.Conditions>
+						<Condition Property="RadioButton.IsChecked" Value="True" />
+						<Condition Property="RadioButton.IsMouseOver" Value="True" />
+					</MultiTrigger.Conditions>
+					<MultiTrigger.Setters>
+						<Setter TargetName="bd" Property="BorderThickness" Value="2" />
+						<Setter TargetName="clrBd" Property="Margin" Value="1" />
+					</MultiTrigger.Setters>
+				</MultiTrigger>
+			</ControlTemplate.Triggers>
+		</ControlTemplate>
+	</RadioButton.Template>
+</RadioButton>

@@ -1,0 +1,93 @@
+﻿<my:BaseWindow x:Class="FormatTrendLineWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:my="clr-namespace:QuickTrader"
+    Title="Format Line" MinHeight="295" MinWidth="303" Height="560" Width="524" ShowInTaskbar="False">
+    <my:BaseWindow.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter1" />
+    </my:BaseWindow.Resources>
+    <Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+		<GroupBox Header="Format" Margin="10">
+			<ScrollViewer VerticalScrollBarVisibility="Auto" >
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+					</Grid.RowDefinitions>
+					<TextBlock Text="Color" Grid.Row="0" Grid.ColumnSpan="2" TextWrapping="WrapWithOverflow" />
+					<my:ColorChooser Grid.Row="1" Grid.ColumnSpan="2" Margin="3" x:Name="colColors" />
+				
+					<TextBlock Text="Dash Style" Grid.ColumnSpan="2" Grid.Row="2" TextWrapping="WrapWithOverflow" />
+                    <ListBox Grid.Row="3" Grid.ColumnSpan="2" Margin="3" Name="lstDashStyle" SelectionChanged="UpdatePreview" MinHeight="19" />
+				
+					<TextBlock Text="Weight" Grid.ColumnSpan="2" Grid.Row="4" TextWrapping="WrapWithOverflow" />
+					<TextBox Grid.Row="5" Grid.ColumnSpan="2" Margin="3" Name="txtWeight"  />
+				
+					<CheckBox Grid.Row="6" Grid.ColumnSpan="2" Content="Extend Right" Margin="3" Name="chkExtendRight" Checked="UpdatePreview" Unchecked="UpdatePreview" />
+					<CheckBox Grid.Row="7" Grid.ColumnSpan="2" Content="Extend Left" Margin="3" Name="chkExtendLeft" Checked="UpdatePreview" Unchecked="UpdatePreview" />
+                    <CheckBox Grid.Row="8" Grid.ColumnSpan="2" Content="Show Parallel / Outer Lines" Margin="3,3,3,17" Name="chkHasParallel" Checked="UpdatePreview" Unchecked="UpdatePreview" />                   
+                    
+                    
+                    <GroupBox Grid.Row="9" Grid.ColumnSpan="2" >
+                        <GroupBox.Header>
+                            <CheckBox Content="Is Regression Line" Margin="3" Name="chkRegression" Checked="UpdatePreview" IsChecked="false"  Unchecked="UpdatePreview" />
+                        </GroupBox.Header>
+                        <Grid Visibility="{Binding ElementName=chkRegression, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter1}}" >
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            
+                            <TextBlock Text="Outer Line Weight" Grid.ColumnSpan="2" Grid.Row="2" TextWrapping="WrapWithOverflow" />
+                            <TextBox Grid.Row="3" Grid.ColumnSpan="2" Margin="3" Name="txtOuterWeight" />
+                            <CheckBox Grid.Row="4" Grid.ColumnSpan="2" Content="Lock to End Bar" Margin="3" Name="chkLockToEnd" Checked="UpdatePreview" Unchecked="UpdatePreview" />
+                        </Grid>
+                    </GroupBox>
+
+                    <Grid Grid.Row="13" VerticalAlignment="Bottom" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Button Margin="3" Padding="10,1" Content="Set as Preset" Name="btnApplyPreset" Click="btnApplyPreset_Click" />
+                        <ListBox Grid.Column="1"  Margin="4" Name="lstStyles" />
+                    </Grid>
+
+                </Grid>
+			</ScrollViewer>
+		</GroupBox>
+        <Grid Grid.Row="1" Grid.ColumnSpan="3" Margin="7" VerticalAlignment="Center" HorizontalAlignment="Right">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button Content="OK" Margin="3" MinWidth="82" MinHeight="23" IsDefault="True" Name="btnOK" Click="btnOK_Click" />
+            <Button Content="Cancel" Grid.Column="1" Margin="3" MinWidth="82" MinHeight="23" IsCancel="True" Name="btnCancel" Click="btnCancel_Click" />
+        </Grid>
+    </Grid>
+</my:BaseWindow>

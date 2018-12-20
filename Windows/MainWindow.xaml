@@ -1,0 +1,79 @@
+﻿<my:BaseWindow x:Class="MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:my="clr-namespace:chartographer"
+    Title="Chartographer" Height="401" Width="764" Visibility="Hidden" WindowStyle="None" PreviewMouseMove="Window_PreviewMouseMove" PreviewMouseDown="Window_PreviewMouseDown" PreviewMouseUp="Window_PreviewMouseUp" >
+    <Grid>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Menu Visibility="Collapsed" Name="mnuMain">
+                <my:CommandMenuItem Header="_File">
+                    <my:CommandMenuItem Header="_New">
+                        <my:CommandMenuItem Header="_Desktop" Command="my:ChartCommands.NewDesktop" />
+                        <my:CommandMenuItem Header="_Workspace" Command="my:ChartCommands.NewWorkspace" />
+                        <my:CommandMenuItem Header="_Chart" x:Name="mnuNewChart" Command="my:ChartCommands.NewChart" />
+                        <my:CommandMenuItem Header="_Analysis Technique" Command="my:ChartCommands.NewAnalysisTechnique" />
+                    </my:CommandMenuItem>
+                    <my:CommandMenuItem Header="_Open">
+                        <my:CommandMenuItem Header="_Workspace" Command="my:ChartCommands.OpenWorkspace" />
+                        <my:CommandMenuItem Header="_Analysis Technique" Command="my:ChartCommands.OpenAnalysisTechnique" />
+                    </my:CommandMenuItem>
+                    <my:CommandMenuItem Header="_Close">
+                        <my:CommandMenuItem Header="_Desktop" Command="my:ChartCommands.CloseDesktop" />
+                        <my:CommandMenuItem Header="_Workspace" x:Name="mnuCloseWorkspace" Command="my:ChartCommands.CloseWorkspace" />
+                        <my:CommandMenuItem Header="_Chart" x:Name="mnuCloseChart" Command="my:ChartCommands.CloseChart" />
+                    </my:CommandMenuItem>
+                </my:CommandMenuItem>
+                <my:CommandMenuItem Header="_Drawing" x:Name="mnuDrawing" >
+                    <my:CommandMenuItem Header="_Remove All Drawing Objects" Command="my:ChartCommands.RemoveAllDrawingObjects" />
+                    <my:CommandMenuItem Header="Remove All Drawing Objects Of Selected _Type" Command="my:ChartCommands.RemoveAllObjectsOfSelectedType" />
+                    <my:CommandMenuItem Header="_Create Annotation">
+                        <my:CommandMenuItem Header="_Line" Command="my:ChartCommands.CreateLineWithPreset1" />
+                        <my:CommandMenuItem Header="La_bel" Command="my:ChartCommands.CreateLabelWithPreset1" />
+                        <my:CommandMenuItem Header="_Arrow" Command="my:ChartCommands.CreateArrowWithPreset1" />
+                    </my:CommandMenuItem>
+                </my:CommandMenuItem>
+                <my:CommandMenuItem Header="Fo_rmat">
+                    <my:CommandMenuItem Header="_Chart" x:Name="mnuFormatChart" Command="my:ChartCommands.Format" CommandParameter="0" />
+                    <my:CommandMenuItem Header="_Workspace" x:Name="mnuFormatWorkspace" Command="my:ChartCommands.FormatWorkspace" />
+                    <my:CommandMenuItem Header="A_pplication" Command="my:ChartCommands.Format" CommandParameter="3" />
+                    <my:CommandMenuItem Header="_Analysis Techniques" x:Name="mnuFormatAnalysisTechniques" Command="my:ChartCommands.FormatAnalysisTechniques" />
+                    <my:CommandMenuItem Header="_Hotkeys" Command="my:ChartCommands.FormatHotKeys" />
+                </my:CommandMenuItem>
+                <my:CommandMenuItem Header="_Help">
+                    <my:CommandMenuItem Header="_About" x:Name="mnuAbout" Click="mnuAbout_Click" />
+                </my:CommandMenuItem>
+            </Menu>        
+            <Grid Name="grd" Grid.Row="1">
+		        
+	        </Grid>
+        </Grid>
+        <Grid HorizontalAlignment="Right" VerticalAlignment="Top" Opacity=".8">
+            <Border Padding="3,0,0,3" CornerRadius="0,0,0,10" Width="120" Height="25" Background="#AAFFFFFF">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Label Content="..." HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Bottom" MouseLeftButtonDown="Dragger_MouseLeftButtonDown" />
+                    <Button Content="_" Grid.Column="1" Focusable="False" Click="btnMinimize_Click" />
+                    <Button Content="r" Grid.Column="2" FontFamily="Wingdings" Focusable="False" Click="btnMaximize_Click" />
+                    <Button Content="X" Grid.Column="3" Focusable="False" TextOptions.TextFormattingMode="Ideal" Click="btnClose_Click" />
+                </Grid>
+                <!--<Border.Background>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FF9D9DA1" Offset="0" />
+                        <GradientStop Color="#FFEEECE2" Offset="0.147" />
+                        <GradientStop Color="#FFE9E7E2" Offset="1" />
+                        <GradientStop Color="#FFE1E0E3" Offset="0.527" />
+                    </LinearGradientBrush>
+                </Border.Background>-->
+            </Border>
+        </Grid>
+    </Grid>
+</my:BaseWindow>

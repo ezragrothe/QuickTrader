@@ -1,0 +1,13 @@
+﻿<Window x:Class="testwin"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:my="clr-namespace:QuickTrader"
+    Title="testwin" Height="207" Width="308">
+	<Grid>
+		<WrapPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
+			<my:ColorRadioButton ColorBrush="Black" Width="22" Height="22" />
+			<my:ColorRadioButton ColorBrush="Yellow" Width="22" Height="22" />
+		</WrapPanel>
+		<Button Margin="192,134,12,12" Content="OK" Width="82" Height="23" />
+	</Grid>
+</Window>

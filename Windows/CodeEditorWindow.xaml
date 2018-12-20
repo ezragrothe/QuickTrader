@@ -1,0 +1,44 @@
+﻿<my:BaseWindow x:Class="CodeEditorWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:my="clr-namespace:QuickTrader"
+    Title="Analysis Technique Code Editor" Height="300" Width="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Menu>
+            <MenuItem Header="File">
+                <MenuItem Name="mnuNew" Header="New..." Click="mnuNew_Click" />
+                <MenuItem Name="mnuOpen" Header="Open..." Click="mnuOpen_Click" />
+                <MenuItem Name="mnuSave" Header="Save" Click="mnuSave_Click" IsEnabled="false" />
+                <MenuItem Name="mnuSaveAs" Header="Save As..." Click="mnuSaveAs_Click" IsEnabled="false" />
+                <MenuItem Name="mnuClose" Header="Close" Click="mnuClose_Click" />
+            </MenuItem>
+            <MenuItem Header="Execute">
+                <MenuItem Name="mnuCheckForErrors" Header="Check For Errors" Click="mnuCheckForErrors_Click" IsEnabled="false" />
+                <MenuItem Name="mnuExecute" Header="Execute" Click="mnuExecute_Click" IsEnabled="false" Visibility="Collapsed"  />
+                <MenuItem Name="mnuSaveAndExecute" Header="Save And Execute" Click="mnuSaveAndExecute_Click" IsEnabled="false" />
+            </MenuItem>
+            <MenuItem Header="Edit">
+                <MenuItem Name="mnuInsertTemplate" Header="Insert Template Analysis Technique" Click="mnuInsertTemplate_Click" IsEnabled="false" />
+                <MenuItem Name="mnuOptions" Header="Options..." Click="mnuOptions_Click" IsEnabled="false" />
+            </MenuItem>
+        </Menu>
+        <TabControl Grid.Row="2" Name="tabMain" SelectionChanged="tabMain_SelectionChanged">
+            <!--<TabItem Header="">
+                <TextBox Name="txtCode" Background="White" Foreground="Black" 
+                         AcceptsTab="True" AcceptsReturn="True" AutoWordSelection="True" IsReadOnly="true"
+                         HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" 
+                         FontFamily="Global Monospace" FontSize="13"
+                         TextChanged="txtCode_TextChanged" >
+            
+                </TextBox>
+            </TabItem>-->
+        </TabControl>
+        
+    </Grid>
+</my:BaseWindow>
