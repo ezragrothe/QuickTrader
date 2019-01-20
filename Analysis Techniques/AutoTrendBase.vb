@@ -183,6 +183,8 @@
         'Public Property BarCountText As Label
         Public Property ABCLengths As New List(Of ABCCombo)
         Public Property ABC As ABCCombo
+        Public Property IsOutsideSwing As Boolean
+        Public Property IsInsideSwing As Boolean
     End Class
     Public Class ABCCombo
         Public Property A As Point

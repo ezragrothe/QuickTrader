@@ -17,6 +17,9 @@
         <Input()> Public Property NeutralColor As Color = Colors.Gray
         <Input()> Public Property GapColor As Color = Colors.Pink
         <Input()> Public Property OsBarColor As Color = Colors.Pink
+        <Input()> Public Property PushCountTextColor As Color = Colors.Blue
+        <Input()> Public Property PushCountFontSize As Decimal = 20
+        <Input()> Public Property PushCountFontWeight As FontWeight = FontWeights.Bold
         <Input()> Public Property AbcBarColoring As Boolean = False
         <Input()> Public Property OsBarColoring As Boolean = False
         <Input()> Public Property OsHitLineThickness As Decimal = 1.2
@@ -37,6 +40,9 @@
         Private osHitLine1 As TrendLine
         Private mergedTrend As LineCoordinates
         Private mergedDirection As Boolean
+        Private pushCountText As Label
+        Private reversalSwingMove As Boolean
+
         Public Property ChartPadVisible As Boolean = True Implements IChartPadAnalysisTechnique.ChartPadVisible
         Public Property ChartPadLocation As Point Implements IChartPadAnalysisTechnique.ChartPadLocation
             Get
@@ -49,7 +55,16 @@
         End Property
         Public Property ChartPad As UIChartControl Implements IChartPadAnalysisTechnique.ChartPad
 
-
+        Function CreateText(position As Point, yOffset As Double, direction As Direction, text As String, color As Color, fontSize As Double, fontWeight As FontWeight) As Label
+            Dim label As Label = NewLabel(text, color, AddToY(position, Chart.GetRelativeFromRealHeight(If(direction, 1, -1) * yOffset)))
+            label.Font.FontSize = fontSize
+            label.Font.FontWeight = fontWeight
+            label.IsEditable = False
+            label.IsSelectable = False
+            label.HorizontalAlignment = LabelHorizontalAlignment.Center
+            If direction = Direction.Up Then label.VerticalAlignment = LabelVerticalAlignment.Bottom Else label.VerticalAlignment = LabelVerticalAlignment.Top
+            Return label
+        End Function
 
         Protected Overrides Sub Begin()
             MyBase.Begin()
@@ -208,17 +223,29 @@
                         mergedTrend = New LineCoordinates(New Point(CurrentBar.Number, CurrentBar.High), New Point(CurrentBar.Number, CurrentBar.Low))
                         mergedDirection = False
                     End If
+                    pushCountText = CreateText(mergedTrend.EndPoint, 0, mergedDirection, "1", PushCountTextColor, PushCountFontSize, PushCountFontWeight)
                     ColorCurrentBar(If(CurrentBar.Direction = Direction.Up, UpTrendColor, DownTrendColor))
                 End If
 
                 'extension
+                Dim ext As Boolean
                 If mergedDirection And CurrentBar.Direction And Round(CurrentBar.High, 5) >= Round(mergedTrend.EndPoint.Y, 5) Then
                     BarColorRoutine(mergedTrend.EndPoint.X, CurrentBar.Number, UpTrendColor)
                     mergedTrend = New LineCoordinates(mergedTrend.StartPoint, New Point(CurrentBar.Number, CurrentBar.High))
+                    ext = True
                 ElseIf Not mergedDirection And Not CurrentBar.Direction And Round(CurrentBar.Low, 5) <= Round(mergedTrend.EndPoint.Y, 5) Then
                     BarColorRoutine(mergedTrend.EndPoint.X, CurrentBar.Number, DownTrendColor)
                     mergedTrend = New LineCoordinates(mergedTrend.StartPoint, New Point(CurrentBar.Number, CurrentBar.Low))
+                    ext = True
                 End If
+                If ext Then
+                    pushCountText.Location = mergedTrend.EndPoint
+                    If reversalSwingMove Then
+                        pushCountText.Text = CInt(pushCountText.Text) + 1
+                    End If
+                    reversalSwingMove = False
+                End If
+
 
                 ' check for new 3-swing trend - check if there is at least a couple swings in between last trend and now
                 If CurrentBar.Number >= CInt(mergedTrend.EndPoint.X) + 3 Then
@@ -232,28 +259,36 @@
                         End If
                     Next
                     If bPoint.X = CurrentBar.Number Then
+                        reversalSwingMove = False
                         If mergedDirection Then
                             mergedTrend = New LineCoordinates(AddToX(mergedTrend.EndPoint, 1), New Point(CurrentBar.Number, CurrentBar.Low))
                         Else
                             mergedTrend = New LineCoordinates(AddToX(mergedTrend.EndPoint, 1), New Point(CurrentBar.Number, CurrentBar.High))
                         End If
                         'NewTrendLine(Colors.Pink, mergedTrend.StartPoint, mergedTrend.EndPoint)
+                        pushCountText = CreateText(mergedTrend.EndPoint, 0, Not mergedDirection, "2", PushCountTextColor, PushCountFontSize, PushCountFontWeight)
                         BarColorRoutine(mergedTrend.StartPoint.X, CurrentBar.Number, If(Not mergedDirection, UpTrendColor, DownTrendColor))
                         mergedDirection = Not mergedDirection
                     End If
                 End If
-
                 'reversal trend
                 If mergedDirection And Not CurrentBar.Direction And Round(CurrentBar.Low, 5) <= Round(mergedTrend.StartPoint.Y, 5) Then
                     mergedTrend = New LineCoordinates(New Point(CurrentBar.Number, CurrentBar.High), New Point(CurrentBar.Number, CurrentBar.Low))
                     ColorCurrentBar(DownTrendColor)
                     mergedDirection = Not mergedDirection
+                    reversalSwingMove = False
+                    pushCountText = CreateText(mergedTrend.EndPoint, 0, mergedDirection, "1", PushCountTextColor, PushCountFontSize, PushCountFontWeight)
                 ElseIf Not mergedDirection And CurrentBar.Direction And Round(CurrentBar.High, 5) >= Round(mergedTrend.StartPoint.Y, 5) Then
                     mergedTrend = New LineCoordinates(New Point(CurrentBar.Number, CurrentBar.Low), New Point(CurrentBar.Number, CurrentBar.High))
                     ColorCurrentBar(UpTrendColor)
                     mergedDirection = Not mergedDirection
+                    reversalSwingMove = False
+                    pushCountText = CreateText(mergedTrend.EndPoint, 0, mergedDirection, "1", PushCountTextColor, PushCountFontSize, PushCountFontWeight)
                 End If
 
+                If mergedDirection <> CurrentBar.Direction Then
+                    reversalSwingMove = True
+                End If
 
             End If
 

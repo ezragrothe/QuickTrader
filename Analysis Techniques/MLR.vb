@@ -22,7 +22,26 @@ Namespace AnalysisTechniques
         Dim mergedTrend As LineCoordinates
         Dim lastTrends() As Swing
         Dim abcChannel As Swing
-        Dim lastSwing As Swing
+        Dim swings As List(Of Swing)
+        Dim pointList As List(Of Point)
+        Dim lastSwingDirection As Direction
+        Private Property lastSwing As Swing
+            Get
+                If swings.Count = 0 Then
+                    Dim s = New Swing(NewTrendLine(Colors.Gray, New Point(1, CurrentBar.Close), New Point(1, CurrentBar.Close)), Direction.Up)
+
+                    s.TL.Pen.Thickness = SwingLineThickness
+                    swings.Add(s)
+                End If
+                Return swings(swings.Count - 1)
+            End Get
+            Set(value As Swing)
+                If swings.Count = 0 Then
+                    swings.Add(Nothing)
+                End If
+                swings(swings.Count - 1) = value
+            End Set
+        End Property
         Dim currentSwingBCLengths As List(Of Label)
         Dim confirmedSwingChannel As TrendLine
         Dim prevSwing As LineCoordinates
@@ -96,14 +115,17 @@ Namespace AnalysisTechniques
         <Input> Property ConfirmedTrendDownColor As Color = Colors.Red
         <Input> Property PotentialTrendUpColor As Color = Colors.SaddleBrown
         <Input> Property PotentialTrendDownColor As Color = Colors.Blue
-        <Input> Property UpBarColor As Color = Colors.Green
         <Input> Property NeutralBarColor As Color = Colors.Gray
-        <Input> Property DownBarColor As Color = Colors.Red
-        <Input> Property OsSwingColor As Color = Colors.Blue
+        <Input> Property IsUpSwingColor As Color = Colors.LightBlue
+        <Input> Property IsDownSwingColor As Color = Colors.Black
+        <Input> Property OsUpSwingColor As Color = Colors.Lime
+        <Input> Property OsDownSwingColor As Color = Colors.Red
+        <Input> Property HitCountTextColor As Color = Colors.Blue
+        <Input> Property IsOsSwingThickness As Decimal = 3
         <Input> Property AboveFillColor As Color = Colors.Red
         <Input> Property BelowFillColor As Color = Colors.Red
         <Input> Property AbcBarColoring As Boolean = True
-        <Input> Property OsBarColoring As Boolean = True
+        Property OsIsBarColoring As Boolean = True
         <Input> Property GapColor As Color = Colors.Red
         <Input> Property GapLineThickness As Decimal = 1
         <Input> Property GapLinesOnSwing As Boolean = True
@@ -129,13 +151,17 @@ Namespace AnalysisTechniques
         <Input> Property SwingTargetTextLineLength As Integer = 12
         <Input> Property SwingChannelsOn As Boolean = True
         <Input> Property LastSwingChannelOn As Boolean = True
+        <Input> Property PresetSwingPattern1 As String = "id"
+        <Input> Property PresetSwingPattern2 As String = "id"
+        <Input> Property PresetSwingPattern3 As String = "id"
+        <Input> Property PresetSwingPattern4 As String = "id"
+        <Input> Property CurrentPresetPattern As Integer = 1
 
         '<Input> Property HistorySwingChannelThickness As Decimal = 1
         Property TrendLineThickness As Decimal = 0
         Property LastTrendLineThickness As Decimal = 0
         <Input(, "Trends")> Property ConfirmedTrendRegressionLineThicknessHLite As Decimal = 1
         <Input> Property ConfirmedTrendChannelLineThicknessHLite As Decimal = 1
-        <Input> Property ConfirmedHistoryTrendChannelLineThicknessHLite As Decimal = 1
         <Input> Property PotentialTrendRegressionLineThicknessHLite As Decimal = 1
         <Input> Property PotentialTrendChannelLineThicknessHLite As Decimal = 1
         <Input(, "-")> Property ConfirmedTrendRegressionLineThickness As Decimal = 1
@@ -159,7 +185,19 @@ Namespace AnalysisTechniques
         Property LastRegressionFillToggle As Boolean = True
         Property RegressionMode As Boolean = False
         '<Input> Property ExtendLastSwing As Boolean = True
-
+        Private Function GetPreset(index As Integer) As String
+            Select Case index
+                Case 1
+                    Return PresetSwingPattern1
+                Case 2
+                    Return PresetSwingPattern2
+                Case 3
+                    Return PresetSwingPattern3
+                Case 4
+                    Return PresetSwingPattern4
+            End Select
+            Return PresetSwingPattern1
+        End Function
 
         Protected Overrides Sub Begin()
             MyBase.Begin()
@@ -186,8 +224,8 @@ Namespace AnalysisTechniques
 
                 lastTrends(i).RegressionTL = CreateFillTrendLine(SwingColor, Colors.Transparent, Colors.Transparent)
                 lastTrends(i).RegressionTL.ExtendRight = True
-                lastTrends(i).RegressionTL.OuterPen.Thickness = ConfirmedTrendChannelLineThickness
-                lastTrends(i).RegressionTL.Pen.Thickness = ConfirmedTrendRegressionLineThickness
+                lastTrends(i).RegressionTL.OuterPen.Thickness = If(i = HiLiteIndex, ConfirmedTrendChannelLineThicknessHLite, ConfirmedTrendChannelLineThickness)
+                lastTrends(i).RegressionTL.Pen.Thickness = If(i = HiLiteIndex, ConfirmedTrendRegressionLineThicknessHLite, ConfirmedTrendRegressionLineThickness)
                 'lastTrends(i).RegressionTLOuterLines = NewTrendLine(Colors.Gray)
                 'If i = HiLiteIndex Then
                 '    lastTrends(i).RegressionTL.Pen.Thickness = ConfirmedTrendRegressionLineThicknessHLite
@@ -217,11 +255,7 @@ Namespace AnalysisTechniques
                 'lastSwings(i).LengthText = CreateText(AddToY(lastSwings(i).EndPoint, Chart.GetRelativeFromRealHeight(TextSpacing)), lastSwings(i).Direction, Abs(lastSwings(i).EndPrice - lastSwings(i).StartPrice), If(lastSwings(i).Direction, SwingUpColor, SwingDownColor))
                 'lastSwings(i).LengthText.Text = ""
             Next
-            lastSwing = New Swing(NewTrendLine(Colors.Gray, New Point(1, CurrentBar.Close), New Point(1, CurrentBar.Close)), Direction.Up)
-            lastSwing.PointList = New List(Of Point)
-            lastSwing.PointList.Add(New Point(1, CurrentBar.Close))
-            lastSwing.PointList.Add(New Point(1, CurrentBar.Close))
-            lastSwing.TL.Pen.Thickness = SwingLineThickness
+
             currentSwingBCLengths = New List(Of Label)
             currentSwingBCLengths.Add(Nothing)
             confirmedSwingChannel = NewTrendLine(SwingColor)
@@ -298,7 +332,11 @@ Namespace AnalysisTechniques
 
             gapLines = New Dictionary(Of Point, TrendLine)
             mergedTrend = New LineCoordinates(0, 0, 0, 0)
-
+            swings = New List(Of Swing)
+            pointList = New List(Of Point)
+            pointList.Add(New Point(1, CurrentBar.Close))
+            pointList.Add(New Point(1, CurrentBar.Close))
+            lastSwingDirection = Direction.Up
         End Sub
         Private Function CreateParallelTrendLine(color As Color, outerColor As Color, thickness As Double, outerThickness As Double, extendRight As Boolean, point1 As Point, point2 As Point) As TrendLine
             Dim t As TrendLine = NewTrendLine(color, point1, point2)
@@ -381,19 +419,25 @@ Namespace AnalysisTechniques
         End Function
         Private Sub CalculateSwing()
             swingevnt = False
-            If ((Round(CurrentBar.High - lastSwing.EndPrice, 5) >= Round(SwingRV, 5) And lastSwing.Direction = Direction.Down) Or
-                    (Round(lastSwing.EndPrice - CurrentBar.Low, 5) >= Round(SwingRV, 5) AndAlso lastSwing.Direction = Direction.Up)) And CurrentBar.Number <> lastSwing.EndBar Then
-                lastSwing.Direction = Not lastSwing.Direction
+            If ((Round(CurrentBar.High - pointList(pointList.Count - 1).Y, 5) >= Round(SwingRV, 5) And lastSwingDirection = Direction.Down) Or
+                    (Round(pointList(pointList.Count - 1).Y - CurrentBar.Low, 5) >= Round(SwingRV, 5) AndAlso lastSwingDirection = Direction.Up)) And CurrentBar.Number <> pointList(pointList.Count - 1).X Then
+
 
                 prevSwing = lastSwing.TL.Coordinates
-                Dim p = New Point(CurrentBar.Number, If(lastSwing.Direction = Direction.Up, CurrentBar.High, CurrentBar.Low))
+                Dim p = New Point(CurrentBar.Number, If(lastSwingDirection = Direction.Up, CurrentBar.High, CurrentBar.Low))
                 Dim color As Color = SwingColor
-                If OsBarColoring And Round(Abs(p.Y - lastSwing.EndPoint.Y), 5) >= Round(Abs(lastSwing.StartPoint.Y - lastSwing.EndPoint.Y), 5) Then
-                    color = OsSwingColor
-                End If
+
                 lastSwing.TL.Pen.Thickness = If(SwingChannelsOn, 0, SwingLineThickness)
-                lastSwing.TL = NewTrendLine(color, lastSwing.EndPoint, p, True)
-                lastSwing.TL.Pen.Thickness = If(LastSwingChannelOn, 0, LastSwingLineThickness)
+                If OsIsBarColoring Then
+                    If Round(Abs(p.Y - lastSwing.EndPoint.Y), 5) >= Round(Abs(lastSwing.StartPoint.Y - lastSwing.EndPoint.Y), 5) Then
+                        color = If(lastSwingDirection, OsUpSwingColor, OsDownSwingColor)
+                    Else
+                        color = If(lastSwingDirection, IsUpSwingColor, IsDownSwingColor)
+                    End If
+                End If
+                swings.Add(New Swing(NewTrendLine(color, lastSwing.EndPoint, p, True), Not lastSwingDirection))
+                lastSwingDirection = Not lastSwingDirection
+                lastSwing.TL.Pen.Thickness = If(Not LastSwingChannelOn Or (LastSwingChannelOn And Not SwingChannelsOn), LastSwingLineThickness, 0)
 
                 If SwingChannelsOn Then
                     confirmedSwingChannel.OuterPen.Thickness = ConfirmedSwingChannelLineThickness
@@ -413,44 +457,83 @@ Namespace AnalysisTechniques
                     confirmedSwingChannel.Pen.Thickness = ConfirmedSwingRegressionLineThickness
                 End If
                 confirmedSwingChannel.Coordinates = lastSwing.TL.Coordinates
-                lastSwing.PointList.Add(p)
-                lastSwing.LengthText = CreateText(AddToY(lastSwing.EndPoint, If(lastSwing.Direction = Direction.Up, 1, -1) * Chart.GetRelativeFromRealHeight(TextSpacing)), lastSwing.Direction, Abs(lastSwing.EndPrice - lastSwing.StartPrice), color)
+                pointList.Add(p)
+                lastSwing.LengthText = CreateText(AddToY(lastSwing.EndPoint, If(lastSwingDirection = Direction.Up, 1, -1) * Chart.GetRelativeFromRealHeight(TextSpacing)), lastSwingDirection, Abs(lastSwing.EndPrice - lastSwing.StartPrice), SwingColor)
                 For Each item In currentSwingBCLengths
                     RemoveObjectFromChart(item)
                 Next
                 currentSwingBCLengths.Clear()
                 currentSwingBCLengths.Add(Nothing)
                 swingevnt = True
-            ElseIf (Round(CurrentBar.High, 5) >= Round(lastSwing.EndPrice, 5) And lastSwing.Direction = Direction.Up) Or
-                   (Round(CurrentBar.Low, 5) <= Round(lastSwing.EndPrice, 5) And lastSwing.Direction = Direction.Down) Then
-                Dim p = New Point(CurrentBar.Number, If(lastSwing.Direction = Direction.Up, CurrentBar.High, CurrentBar.Low))
+                lastSwing.IsOutsideSwing = False
+            ElseIf (Round(CurrentBar.High, 5) >= Round(pointList(pointList.Count - 1).Y, 5) And lastSwingDirection = Direction.Up) Or
+                       (Round(CurrentBar.Low, 5) <= Round(pointList(pointList.Count - 1).Y, 5) And lastSwingDirection = Direction.Down) Then
+                Dim p = New Point(CurrentBar.Number, If(lastSwingDirection = Direction.Up, CurrentBar.High, CurrentBar.Low))
                 Dim color As Color = SwingColor
                 lastSwing.TL.EndPoint = p
-                lastSwing.PointList(lastSwing.PointList.Count - 1) = p
-                If OsBarColoring And lastSwing.PointList.Count > 2 Then
-                    If Round(Abs(lastSwing.PointList(lastSwing.PointList.Count - 1).Y - lastSwing.PointList(lastSwing.PointList.Count - 2).Y), 5) >= Round(Abs(lastSwing.PointList(lastSwing.PointList.Count - 2).Y - lastSwing.PointList(lastSwing.PointList.Count - 3).Y), 5) Then
-                        color = OsSwingColor
+                pointList(pointList.Count - 1) = p
+                If OsIsBarColoring And pointList.Count > 2 Then
+                    If Round(Abs(pointList(pointList.Count - 1).Y - pointList(pointList.Count - 2).Y), 5) >= Round(Abs(pointList(pointList.Count - 2).Y - pointList(pointList.Count - 3).Y), 5) Then
+                        color = If(lastSwingDirection, OsUpSwingColor, OsDownSwingColor)
+                    Else
+                        color = If(lastSwingDirection, IsUpSwingColor, IsDownSwingColor)
                     End If
                 End If
                 lastSwing.TL.Pen.Brush = New SolidColorBrush(color)
                 confirmedSwingChannel.Pen.Brush = New SolidColorBrush(color)
-                UpdateText(lastSwing.LengthText, AddToY(lastSwing.EndPoint, If(lastSwing.Direction = Direction.Up, 1, -1) * Chart.GetRelativeFromRealHeight(TextSpacing)),
-                            lastSwing.Direction, Abs(lastSwing.EndPrice - lastSwing.StartPrice), color)
+                UpdateText(lastSwing.LengthText, AddToY(lastSwing.EndPoint, If(lastSwingDirection = Direction.Up, 1, -1) * Chart.GetRelativeFromRealHeight(TextSpacing)),
+                                lastSwingDirection, Abs(lastSwing.EndPrice - lastSwing.StartPrice))
                 swingevnt = True
                 confirmedSwingChannel.Coordinates = lastSwing.TL.Coordinates
             End If
-            If OsBarColoring Then
-                If swingevnt Then
-                    BarColorRoutine(lastSwing.StartBar, CurrentBar.Number, lastSwing.TL.Pen.Brush)
-                Else
-                    ColorCurrentBar(NeutralBarColor)
-                End If
+            'up outside - u
+            'up inside - i
+            'down outside - d
+            'down inside - f
+            '
+            If swingevnt Then
+                Dim pattern As String = ""
+                For i = 1 To swings.Count - 1
+                    If swings(i).Direction = Direction.Up Then
+                        If Round(Abs(swings(i).EndPrice - swings(i).StartPrice), 5) >= Round(Abs(swings(i - 1).EndPrice - swings(i - 1).StartPrice), 5) Then
+                            pattern &= "u"
+                        Else
+                            pattern &= "i"
+                        End If
+
+                    Else
+                        If Round(Abs(swings(i).EndPrice - swings(i).StartPrice), 5) >= Round(Abs(swings(i - 1).EndPrice - swings(i - 1).StartPrice), 5) Then
+                            pattern &= "d"
+                        Else
+                            pattern &= "f"
+                        End If
+                    End If
+                Next
+                Dim match = System.Text.RegularExpressions.Regex.Match(pattern, GetPreset(CurrentPresetPattern), RegularExpressions.RegexOptions.IgnoreCase)
+                Do While match.Success
+                    For i = match.Index To match.Index + match.Length - 1
+                        If LCase(match.Value.Substring(i - match.Index, 1)) = match.Value.Substring(i - match.Index, 1) Then
+                            swings(i + 1).TL.Pen.Thickness = IsOsSwingThickness
+                        Else
+                            swings(i + 1).TL.Pen.Thickness = SwingLineThickness
+                        End If
+                    Next
+                    match = match.NextMatch
+                Loop
+                Dim a As New Object
+            End If
+            If OsIsBarColoring And Not AbcChannelMode Then
+                'If swingevnt Then
+                '    BarColorRoutine(lastSwing.StartBar, CurrentBar.Number, lastSwing.TL.Pen.Brush)
+                'Else
+                ColorCurrentBar(NeutralBarColor)
+                'End If
             Else
                 If Not AbcBarColoring Then
                     If swingevnt Then
                         'BarColorRoutine(lastSwing.StartBar, CurrentBar.Number, lastTrends(0).TL.Pen.Brush)
                     Else
-                        ColorCurrentBar(SwingColor)
+                        ColorCurrentBar(NeutralBarColor)
                     End If
                 Else
                     ColorCurrentBar(NeutralBarColor)
@@ -459,14 +542,14 @@ Namespace AnalysisTechniques
             If LastSwingChannelOn Then
                 potentialSwingChannel.Coordinates = New LineCoordinates(lastSwing.StartPoint, New Point(CurrentBar.Number, CurrentBar.Close))
             End If
-            If swingevnt And ((AbcBarColoring And Not OsBarColoring) Or AbcChannelMode) Then
+            If swingevnt And ((AbcBarColoring) Or AbcChannelMode) Then
                 If mergedTrend.StartPoint = New Point(0, 0) Then
                     mergedTrend = New LineCoordinates(lastSwing.StartPoint, lastSwing.EndPoint)
                     'NewTrendLine(Colors.Pink, mergedTrends(mergedTrends.Count - 1).StartPoint, mergedTrends(mergedTrends.Count - 1).EndPoint)
                     If AbcChannelMode Then
                         abcChannel.RegressionTL =
-                                    CreateFillTrendLine(If(lastSwing.Direction, ConfirmedTrendUpColor, ConfirmedTrendDownColor),
-                                                            If(lastSwing.Direction, ConfirmedTrendUpColor, ConfirmedTrendDownColor),
+                                    CreateFillTrendLine(If(lastSwingDirection, ConfirmedTrendUpColor, ConfirmedTrendDownColor),
+                                                            If(lastSwingDirection, ConfirmedTrendUpColor, ConfirmedTrendDownColor),
                                                             ConfirmedTrendRegressionLineThickness,
                                                             ConfirmedTrendChannelLineThickness,
                                                             AboveFillColor,
@@ -474,27 +557,33 @@ Namespace AnalysisTechniques
                                                             True,
                                                             mergedTrend.StartPoint,
                                                             mergedTrend.EndPoint)
-                        abcChannel.LengthText = CreateText(AddToY(lastSwing.EndPoint, If(lastSwing.Direction, 1, -1) * Chart.GetRelativeFromRealHeight(TextSpacing + SwingLengthTextFontSize)), lastSwing.Direction, Abs(mergedTrend.TopY - mergedTrend.BottomY), If(lastSwing.Direction, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
-                        abcChannel.PushCountText = CreateText(lastSwing.EndPoint, TextSpacing + SwingLengthTextFontSize + TrendLengthTextFontSize, lastSwing.Direction, "1", OsSwingColor, PushCountFontSize, PushCountFontWeight)
+                        abcChannel.LengthText = CreateText(AddToY(lastSwing.EndPoint, If(lastSwingDirection, 1, -1) * Chart.GetRelativeFromRealHeight(TextSpacing + SwingLengthTextFontSize)), lastSwingDirection, Abs(mergedTrend.TopY - mergedTrend.BottomY), If(lastSwingDirection, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
                     End If
-                    BarColorRoutine(lastSwing.StartBar, lastSwing.EndBar, If(lastSwing.Direction = Direction.Up, UpBarColor, DownBarColor))
+                    If AbcChannelMode Or AbcBarColoring Then
+                        RemoveObjectFromChart(abcChannel.PushCountText)
+                        abcChannel.PushCountText = CreateText(lastSwing.EndPoint, TextSpacing + SwingLengthTextFontSize + TrendLengthTextFontSize, lastSwingDirection, "1", HitCountTextColor, PushCountFontSize, PushCountFontWeight)
+                    End If
+                    BarColorRoutine(lastSwing.StartBar, lastSwing.EndBar, If(lastSwingDirection = Direction.Up, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
                 End If
                 Dim mergedTrendDir As Boolean
                 mergedTrendDir = mergedTrend.EndPoint.Y > mergedTrend.StartPoint.Y
 
-                If lastSwing.Direction = mergedTrendDir Then ' extension
+                If lastSwingDirection = mergedTrendDir Then ' extension
                     If (mergedTrendDir And Round(lastSwing.EndPoint.Y, 5) >= Round(mergedTrend.EndPoint.Y, 5)) Or
                             (Not mergedTrendDir And Round(lastSwing.EndPoint.Y, 5) <= Round(mergedTrend.EndPoint.Y, 5)) Then
-                        BarColorRoutine(mergedTrend.EndPoint.X, lastSwing.EndBar, If(lastSwing.Direction = Direction.Up, UpBarColor, DownBarColor))
+                        BarColorRoutine(mergedTrend.EndPoint.X, lastSwing.EndBar, If(lastSwingDirection = Direction.Up, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
                         mergedTrend = New LineCoordinates(mergedTrend.StartPoint, lastSwing.EndPoint)
                         If AbcChannelMode Then
                             abcChannel.RegressionTL.Coordinates = mergedTrend
-                            UpdateText(abcChannel.LengthText, AddToY(lastSwing.EndPoint, If(lastSwing.Direction, 1, -1) * Chart.GetRelativeFromRealHeight(TextSpacing + SwingLengthTextFontSize)), lastSwing.Direction, Abs(mergedTrend.TopY - mergedTrend.BottomY), If(lastSwing.Direction, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
+                            UpdateText(abcChannel.LengthText, AddToY(lastSwing.EndPoint, If(lastSwingDirection, 1, -1) * Chart.GetRelativeFromRealHeight(TextSpacing + SwingLengthTextFontSize)), lastSwingDirection, Abs(mergedTrend.TopY - mergedTrend.BottomY), If(lastSwingDirection, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
+                        End If
+                        If AbcChannelMode Or AbcBarColoring Then
                             If Not reversalSwingMove Then
-                                abcChannel.PushCountText.Location = AddToY(lastSwing.EndPoint, If(lastSwing.Direction, 1, -1) * Chart.GetRelativeFromRealHeight(TextSpacing + SwingLengthTextFontSize + TrendLengthTextFontSize))
+                                abcChannel.PushCountText.Location = AddToY(lastSwing.EndPoint, If(lastSwingDirection, 1, -1) * Chart.GetRelativeFromRealHeight(TextSpacing + SwingLengthTextFontSize + TrendLengthTextFontSize))
                             Else
-                                abcChannel.PushCountText.Location = AddToY(abcChannel.PushCountText.Location, If(Not lastSwing.Direction, 1, -1) * Chart.GetRelativeFromRealHeight(TrendLengthTextFontSize))
-                                abcChannel.PushCountText = CreateText(lastSwing.EndPoint, TextSpacing + SwingLengthTextFontSize + TrendLengthTextFontSize, lastSwing.Direction, CInt(abcChannel.PushCountText.Text) + 1, OsSwingColor, PushCountFontSize, PushCountFontWeight)
+                                abcChannel.PushCountText.Location = AddToY(abcChannel.PushCountText.Location, If(Not lastSwingDirection, 1, -1) * Chart.GetRelativeFromRealHeight(TrendLengthTextFontSize))
+                                RemoveObjectFromChart(abcChannel.PushCountText)
+                                abcChannel.PushCountText = CreateText(lastSwing.EndPoint, TextSpacing + SwingLengthTextFontSize + TrendLengthTextFontSize, lastSwingDirection, CInt(abcChannel.PushCountText.Text) + 1, HitCountTextColor, PushCountFontSize, PushCountFontWeight)
                             End If
                         End If
                         'NewTrendLine(Colors.LightBlue, mergedTrend.StartPoint, mergedTrend.EndPoint)
@@ -504,46 +593,49 @@ Namespace AnalysisTechniques
                     'swing against the direction the trend - set reversal flag
                     reversalSwingMove = True
                     If CInt(lastSwing.StartPoint.X) > CInt(mergedTrend.EndPoint.X) Then
-                        Dim aPoint As Point = New Point(0, If(lastSwing.Direction = False, Decimal.MinValue, Decimal.MaxValue)),
-                        bPoint As Point = New Point(0, If(lastSwing.Direction = True, Decimal.MinValue, Decimal.MaxValue))
-                        Dim searchIndex = lastSwing.PointList.Count - 2
-                        While searchIndex > 0 AndAlso CInt(lastSwing.PointList(searchIndex).X) > CInt(mergedTrend.EndPoint.X)
+                        Dim aPoint As Point = New Point(0, If(lastSwingDirection = False, Decimal.MinValue, Decimal.MaxValue)),
+                        bPoint As Point = New Point(0, If(lastSwingDirection = True, Decimal.MinValue, Decimal.MaxValue))
+                        Dim searchIndex = pointList.Count - 2
+                        While searchIndex > 0 AndAlso CInt(pointList(searchIndex).X) > CInt(mergedTrend.EndPoint.X)
                             searchIndex -= 1
                         End While
-                        While searchIndex < lastSwing.PointList.Count
-                            If (lastSwing.Direction And Round(lastSwing.PointList(searchIndex).Y, 5) <= Round(aPoint.Y, 5)) Or
-                           (Not lastSwing.Direction And Round(lastSwing.PointList(searchIndex).Y, 5) >= Round(aPoint.Y, 5)) Then
-                                aPoint = New Point(searchIndex, lastSwing.PointList(searchIndex).Y)
+                        While searchIndex < pointList.Count And searchIndex >= 0
+                            If (lastSwingDirection And Round(pointList(searchIndex).Y, 5) <= Round(aPoint.Y, 5)) Or
+                           (Not lastSwingDirection And Round(pointList(searchIndex).Y, 5) >= Round(aPoint.Y, 5)) Then
+                                aPoint = New Point(searchIndex, pointList(searchIndex).Y)
                             End If
                             searchIndex += 1
                         End While
-                        For searchIndex = aPoint.X + 1 To lastSwing.PointList.Count - 1
-                            If (lastSwing.Direction And Round(lastSwing.PointList(searchIndex).Y, 5) >= Round(bPoint.Y, 5)) Or
-                           (Not lastSwing.Direction And Round(lastSwing.PointList(searchIndex).Y, 5) <= Round(bPoint.Y, 5)) Then
-                                bPoint = New Point(searchIndex, lastSwing.PointList(searchIndex).Y)
+                        For searchIndex = aPoint.X + 1 To pointList.Count - 1
+                            If (lastSwingDirection And Round(pointList(searchIndex).Y, 5) >= Round(bPoint.Y, 5)) Or
+                           (Not lastSwingDirection And Round(pointList(searchIndex).Y, 5) <= Round(bPoint.Y, 5)) Then
+                                bPoint = New Point(searchIndex, pointList(searchIndex).Y)
                             End If
                         Next
-                        If bPoint.X = lastSwing.PointList.Count - 1 And CInt(lastSwing.PointList(aPoint.X).X) = CInt(mergedTrend.EndPoint.X) Then
+                        If bPoint.X = pointList.Count - 1 And CInt(pointList(aPoint.X).X) = CInt(mergedTrend.EndPoint.X) Then
                             mergedTrend = New LineCoordinates(mergedTrend.EndPoint, lastSwing.EndPoint)
                             'NewTrendLine(Colors.Pink, mergedTrend.StartPoint, mergedTrend.EndPoint)
                             If AbcChannelMode Then
                                 abcChannel.RegressionTL.ExtendRight = False
-                                SetFillTrendLine(abcChannel.RegressionTL, AboveFillColor, BelowFillColor)
+                                'SetFillTrendLine(abcChannel.RegressionTL, AboveFillColor, BelowFillColor)
+                                abcChannel.RegressionTL.DrawZoneFill = False
                                 abcChannel.RegressionTL =
-                                    CreateParallelTrendLine(If(lastSwing.Direction, ConfirmedTrendUpColor, ConfirmedTrendDownColor),
-                                                            If(lastSwing.Direction, ConfirmedTrendUpColor, ConfirmedTrendDownColor),
+                                    CreateParallelTrendLine(If(lastSwingDirection, ConfirmedTrendUpColor, ConfirmedTrendDownColor),
+                                                            If(lastSwingDirection, ConfirmedTrendUpColor, ConfirmedTrendDownColor),
                                                             ConfirmedTrendRegressionLineThickness,
                                                             ConfirmedTrendChannelLineThickness,
                                                             True,
                                                             mergedTrend.StartPoint,
                                                             mergedTrend.EndPoint)
-                                abcChannel.LengthText = CreateText(AddToY(lastSwing.EndPoint, If(lastSwing.Direction, 1, -1) * Chart.GetRelativeFromRealHeight(TextSpacing + SwingLengthTextFontSize)), lastSwing.Direction, Abs(mergedTrend.TopY - mergedTrend.BottomY), If(lastSwing.Direction, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
+                                abcChannel.LengthText = CreateText(AddToY(lastSwing.EndPoint, If(lastSwingDirection, 1, -1) * Chart.GetRelativeFromRealHeight(TextSpacing + SwingLengthTextFontSize)), lastSwingDirection, Abs(mergedTrend.TopY - mergedTrend.BottomY), If(lastSwingDirection, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
+                            End If
+                            If AbcChannelMode Or AbcBarColoring Then
                                 'push count text
-                                CreateText(lastSwing.PointList(aPoint.X + 1), TextSpacing + SwingLengthTextFontSize, lastSwing.Direction, "1", OsSwingColor, PushCountFontSize, PushCountFontWeight)
-                                abcChannel.PushCountText = CreateText(lastSwing.EndPoint, TextSpacing + SwingLengthTextFontSize + TrendLengthTextFontSize, lastSwing.Direction, "2", OsSwingColor, PushCountFontSize, PushCountFontWeight)
+                                'CreateText(pointList(aPoint.X + 1), TextSpacing + SwingLengthTextFontSize, lastSwingDirection, "1", HitCountTextColor, PushCountFontSize, PushCountFontWeight)
+                                abcChannel.PushCountText = CreateText(lastSwing.EndPoint, TextSpacing + SwingLengthTextFontSize + TrendLengthTextFontSize, lastSwingDirection, "2", HitCountTextColor, PushCountFontSize, PushCountFontWeight)
                                 reversalSwingMove = False
                             End If
-                            BarColorRoutine(mergedTrend.StartPoint.X, lastSwing.EndBar, If(lastSwing.Direction = Direction.Up, UpBarColor, DownBarColor))
+                            BarColorRoutine(mergedTrend.StartPoint.X, lastSwing.EndBar, If(lastSwingDirection = Direction.Up, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
                         End If
                     Else
                         'single swing trend
@@ -553,21 +645,25 @@ Namespace AnalysisTechniques
                             'NewTrendLine(Colors.Blue, mergedTrend.StartPoint, mergedTrend.EndPoint)
                             If AbcChannelMode Then
                                 abcChannel.RegressionTL.ExtendRight = False
-                                SetFillTrendLine(abcChannel.RegressionTL, AboveFillColor, BelowFillColor)
+                                'SetFillTrendLine(abcChannel.RegressionTL, AboveFillColor, BelowFillColor)
+                                abcChannel.RegressionTL.DrawZoneFill = False
                                 abcChannel.RegressionTL =
-                                    CreateParallelTrendLine(If(lastSwing.Direction, ConfirmedTrendUpColor, ConfirmedTrendDownColor),
-                                                            If(lastSwing.Direction, ConfirmedTrendUpColor, ConfirmedTrendDownColor),
+                                    CreateParallelTrendLine(If(lastSwingDirection, ConfirmedTrendUpColor, ConfirmedTrendDownColor),
+                                                            If(lastSwingDirection, ConfirmedTrendUpColor, ConfirmedTrendDownColor),
                                                             ConfirmedTrendRegressionLineThickness,
                                                             ConfirmedTrendChannelLineThickness,
                                                             True,
                                                             mergedTrend.StartPoint,
                                                             mergedTrend.EndPoint)
-                                abcChannel.LengthText = CreateText(AddToY(lastSwing.EndPoint, If(lastSwing.Direction, 1, -1) * Chart.GetRelativeFromRealHeight(TextSpacing + SwingLengthTextFontSize)), lastSwing.Direction, Abs(mergedTrend.TopY - mergedTrend.BottomY), If(lastSwing.Direction, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
+                                abcChannel.LengthText = CreateText(AddToY(lastSwing.EndPoint, If(lastSwingDirection, 1, -1) * Chart.GetRelativeFromRealHeight(TextSpacing + SwingLengthTextFontSize)), lastSwingDirection, Abs(mergedTrend.TopY - mergedTrend.BottomY), If(lastSwingDirection, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
+                            End If
+                            If AbcChannelMode Or AbcBarColoring Then
                                 'push count text
-                                abcChannel.PushCountText = CreateText(lastSwing.EndPoint, TextSpacing + SwingLengthTextFontSize + TrendLengthTextFontSize, lastSwing.Direction, "1", OsSwingColor, PushCountFontSize, PushCountFontWeight)
+                                RemoveObjectFromChart(abcChannel.PushCountText)
+                                abcChannel.PushCountText = CreateText(lastSwing.EndPoint, TextSpacing + SwingLengthTextFontSize + TrendLengthTextFontSize, lastSwingDirection, "1", HitCountTextColor, PushCountFontSize, PushCountFontWeight)
                                 reversalSwingMove = False
                             End If
-                            BarColorRoutine(lastSwing.StartBar, lastSwing.EndBar, If(lastSwing.Direction = Direction.Up, UpBarColor, DownBarColor))
+                            BarColorRoutine(lastSwing.StartBar, lastSwing.EndBar, If(lastSwingDirection = Direction.Up, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
                         End If
                     End If
                 End If
@@ -575,39 +671,39 @@ Namespace AnalysisTechniques
             If swingevnt Then
                 If GapLinesOnSwing Then
                     'check for gap swing
-                    If lastSwing.PointList.Count > 2 AndAlso ((lastSwing.Direction And lastSwing.EndPrice >= lastSwing.PointList(lastSwing.PointList.Count - 3).Y) Or (lastSwing.Direction = False And lastSwing.EndPrice <= lastSwing.PointList(lastSwing.PointList.Count - 3).Y)) Then
-                        GapLine(lastSwing.PointList(lastSwing.PointList.Count - 3)).StartPoint = lastSwing.PointList(lastSwing.PointList.Count - 3)
-                        GapLine(lastSwing.PointList(lastSwing.PointList.Count - 3)).EndPoint = AddToX(lastSwing.PointList(lastSwing.PointList.Count - 3), 20)
-                        GapLine(lastSwing.PointList(lastSwing.PointList.Count - 3)).ExtendRight = True
+                    If pointList.Count > 2 AndAlso ((lastSwingDirection And lastSwing.EndPrice >= pointList(pointList.Count - 3).Y) Or (lastSwingDirection = False And lastSwing.EndPrice <= pointList(pointList.Count - 3).Y)) Then
+                        GapLine(pointList(pointList.Count - 3)).StartPoint = pointList(pointList.Count - 3)
+                        GapLine(pointList(pointList.Count - 3)).EndPoint = AddToX(pointList(pointList.Count - 3), 20)
+                        GapLine(pointList(pointList.Count - 3)).ExtendRight = True
                     End If
-                    If lastSwing.PointList.Count > 3 AndAlso (GapLineExists(lastSwing.PointList(lastSwing.PointList.Count - 4)) And
-                            ((lastSwing.Direction And lastSwing.EndPrice >= lastSwing.PointList(lastSwing.PointList.Count - 4).Y) Or (lastSwing.Direction = False And lastSwing.EndPrice <= lastSwing.PointList(lastSwing.PointList.Count - 4).Y))) Then
-                        RemoveObjectFromChart(GapLine(lastSwing.PointList(lastSwing.PointList.Count - 4)))
+                    If pointList.Count > 3 AndAlso (GapLineExists(pointList(pointList.Count - 4)) And
+                            ((lastSwingDirection And lastSwing.EndPrice >= pointList(pointList.Count - 4).Y) Or (lastSwingDirection = False And lastSwing.EndPrice <= pointList(pointList.Count - 4).Y))) Then
+                        RemoveObjectFromChart(GapLine(pointList(pointList.Count - 4)))
                     End If
-                    If lastSwing.PointList.Count > 4 AndAlso (GapLineExists(lastSwing.PointList(lastSwing.PointList.Count - 5)) And ((lastSwing.Direction And lastSwing.PointList(lastSwing.PointList.Count - 2).Y > lastSwing.PointList(lastSwing.PointList.Count - 5).Y) Or (lastSwing.Direction = False And lastSwing.PointList(lastSwing.PointList.Count - 2).Y < lastSwing.PointList(lastSwing.PointList.Count - 5).Y))) Then
-                        GapLine(lastSwing.PointList(lastSwing.PointList.Count - 5)).EndPoint = New Point(lastSwing.PointList(lastSwing.PointList.Count - 2).X, lastSwing.PointList(lastSwing.PointList.Count - 5).Y)
-                        GapLine(lastSwing.PointList(lastSwing.PointList.Count - 5)).ExtendRight = False
+                    If pointList.Count > 4 AndAlso (GapLineExists(pointList(pointList.Count - 5)) And ((lastSwingDirection And pointList(pointList.Count - 2).Y > pointList(pointList.Count - 5).Y) Or (lastSwingDirection = False And pointList(pointList.Count - 2).Y < pointList(pointList.Count - 5).Y))) Then
+                        GapLine(pointList(pointList.Count - 5)).EndPoint = New Point(pointList(pointList.Count - 2).X, pointList(pointList.Count - 5).Y)
+                        GapLine(pointList(pointList.Count - 5)).ExtendRight = False
                     End If
                 End If
             End If
             If AbcChannelMode Then
                 abcChannel.PotentialTL.Coordinates = New LineCoordinates(mergedTrend.StartPoint, New Point(CurrentBar.Number, 0))
-                abcChannel.PotentialTL.Pen = New Pen(New SolidColorBrush(If(lastSwing.Direction, PotentialTrendUpColor, PotentialTrendDownColor)), PotentialTrendRegressionLineThickness)
-                abcChannel.PotentialTL.OuterPen = New Pen(New SolidColorBrush(If(lastSwing.Direction, PotentialTrendUpColor, PotentialTrendDownColor)), PotentialTrendChannelLineThickness)
+                abcChannel.PotentialTL.Pen = New Pen(New SolidColorBrush(If(lastSwingDirection, PotentialTrendUpColor, PotentialTrendDownColor)), PotentialTrendRegressionLineThickness)
+                abcChannel.PotentialTL.OuterPen = New Pen(New SolidColorBrush(If(lastSwingDirection, PotentialTrendUpColor, PotentialTrendDownColor)), PotentialTrendChannelLineThickness)
                 abcChannel.ExtendTargetText.Location = New Point(CurrentBar.Number, mergedTrend.EndPoint.Y)
                 abcChannel.ExtendTargetText.Text = Strings.StrDup(ExtendTargetTextLineLength, "─") & " Extend " &
                             Round(mergedTrend.EndPoint.Y, 2)
                 abcChannel.ExtendTargetText.Font.Brush = New SolidColorBrush(If(mergedTrend.EndPoint.Y > mergedTrend.StartPoint.Y, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
                 'find swing index of mergedtrend endpoint
-                Dim searchIndex = lastSwing.PointList.Count - 1
-                While searchIndex > 0 AndAlso CInt(lastSwing.PointList(searchIndex).X) > CInt(mergedTrend.EndPoint.X)
+                Dim searchIndex = pointList.Count - 1
+                While searchIndex > 0 AndAlso CInt(pointList(searchIndex).X) > CInt(mergedTrend.EndPoint.X)
                     searchIndex -= 1
                 End While
-                If lastSwing.PointList.Count - searchIndex >= 3 Then
-                    abcChannel.TargetText.Location = New Point(CurrentBar.Number, lastSwing.PointList(searchIndex + 1).Y)
+                If pointList.Count - searchIndex >= 3 Then
+                    abcChannel.TargetText.Location = New Point(CurrentBar.Number, pointList(searchIndex + 1).Y)
                     abcChannel.TargetText.Text = Strings.StrDup(RVTargetTextLineLength, "─") & " " &
-                                FormatNumberLengthAndPrefix(Abs(lastSwing.PointList(searchIndex + 1).Y - mergedTrend.EndPoint.Y)) & " New " &
-                                Round(lastSwing.PointList(searchIndex + 1).Y, 2)
+                                FormatNumberLengthAndPrefix(Abs(pointList(searchIndex + 1).Y - mergedTrend.EndPoint.Y)) & " New " &
+                                Round(pointList(searchIndex + 1).Y, 2)
                 Else
                     abcChannel.TargetText.Location = New Point(CurrentBar.Number, mergedTrend.StartPoint.Y)
                     abcChannel.TargetText.Text = Strings.StrDup(RVTargetTextLineLength, "─") & " " &
@@ -618,26 +714,26 @@ Namespace AnalysisTechniques
                 abcChannel.TargetText.Font.Brush = New SolidColorBrush(If(mergedTrend.EndPoint.Y < mergedTrend.StartPoint.Y, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
             End If
             swingExtendText.Location = New Point(CurrentBar.Number, lastSwing.EndPoint.Y)
-            swingTargetText.Location = New Point(CurrentBar.Number, lastSwing.EndPoint.Y + SwingRV * If(lastSwing.Direction, -1, 1))
+            swingTargetText.Location = New Point(CurrentBar.Number, lastSwing.EndPoint.Y + SwingRV * If(lastSwingDirection, -1, 1))
             swingTargetText.Text = Strings.StrDup(SwingTargetTextLineLength, "─") & " " & FormatNumberLengthAndPrefix(SwingRV) & " RV  " ' & Round(targetText.Location.Y, Chart.Settings("DecimalPlaces").Value)
             CalculateSwingBCTexts()
         End Sub
         Sub CalculateSwingBCTexts()
             Dim cpoint As Point
-            Dim bpoint As New Point(0, If(lastSwing.Direction, 0, Double.MaxValue))
+            Dim bpoint As New Point(0, If(lastSwingDirection, 0, Double.MaxValue))
 
             For i = CurrentBar.Number - 1 To lastSwing.StartBar - 1 Step -1
-                If lastSwing.Direction And Round(Chart.bars(i).Data.High, 5) > bpoint.Y Then
+                If lastSwingDirection And Round(Chart.bars(i).Data.High, 5) > bpoint.Y Then
                     bpoint = New Point(i, Chart.bars(i).Data.High)
-                ElseIf Not lastSwing.Direction And Round(Chart.bars(i).Data.Low, 5) < bpoint.Y Then
+                ElseIf Not lastSwingDirection And Round(Chart.bars(i).Data.Low, 5) < bpoint.Y Then
                     bpoint = New Point(i, Chart.bars(i).Data.Low)
                 End If
             Next
             cpoint = bpoint
             For i = bpoint.X To CurrentBar.Number - 1
-                If Not lastSwing.Direction And Round(Chart.bars(i).Data.High, 5) >= Round(cpoint.Y, 5) Then
+                If Not lastSwingDirection And Round(Chart.bars(i).Data.High, 5) >= Round(cpoint.Y, 5) Then
                     cpoint = New Point(i, Chart.bars(i).Data.High)
-                ElseIf lastSwing.Direction And Round(Chart.bars(i).Data.Low, 5) <= Round(cpoint.Y, 5) Then
+                ElseIf lastSwingDirection And Round(Chart.bars(i).Data.Low, 5) <= Round(cpoint.Y, 5) Then
                     cpoint = New Point(i, Chart.bars(i).Data.Low)
                 End If
             Next
@@ -668,7 +764,7 @@ Namespace AnalysisTechniques
                         .Font.FontSize = SwingLengthTextFontSize
                         .Font.FontWeight = SwingLengthTextFontWeight
                         .HorizontalAlignment = LabelHorizontalAlignment.Right
-                        .VerticalAlignment = If(lastSwing.Direction, VerticalAlignment.Top, VerticalAlignment.Bottom)
+                        .VerticalAlignment = If(lastSwingDirection, VerticalAlignment.Top, VerticalAlignment.Bottom)
                         .IsEditable = False
                         'AddHandler .MouseDown, Sub(sender As Object, location As Point)
                         '                           MinRV = CDec(CType(sender, Label).Tag)
@@ -676,7 +772,7 @@ Namespace AnalysisTechniques
                         '                       End Sub
                     End With
                 End If
-                currentSwingBCLengths(currentSwingBCLengths.Count - 1).Location = New Point(CurrentBar.Number, If(lastSwing.Direction, CurrentBar.Low, CurrentBar.High))
+                currentSwingBCLengths(currentSwingBCLengths.Count - 1).Location = New Point(CurrentBar.Number, If(lastSwingDirection, CurrentBar.Low, CurrentBar.High))
                 currentSwingBCLengths(currentSwingBCLengths.Count - 1).Text = FormatNumberLengthAndPrefix(Abs(cpoint.Y - bpoint.Y))
                 currentSwingBCLengths(currentSwingBCLengths.Count - 1).Tag = Abs(cpoint.Y - bpoint.Y)
             End If
@@ -717,12 +813,13 @@ Namespace AnalysisTechniques
                 End If
                 trend.Direction = Not trend.Direction
 
-                'BarColorRoutine(trend.StartBar, trend.EndBar, NeutralBarColor)
 
                 'multiple lines
                 trend.TLs.Add(NewTrendLine(New Pen(New SolidColorBrush(If(Not trend.Direction, ConfirmedTrendUpColor, ConfirmedTrendDownColor)), 1), trend.EndPoint, New Point(bar.Number, If(trend.Direction, bar.High, bar.Low)), True))
                 trend.TL.Pen.Thickness = 0
-
+                If index = 0 And Not AbcBarColoring Then
+                    BarColorRoutine(trend.StartBar, trend.EndBar, If(trend.Direction, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
+                End If
                 Dim offset = TextSpacing + SwingLengthTextFontSize + TrendLengthTextFontSize * index + StepUpFontSizeIncrement * Max(index - 1, 0)
                 trend.LengthTexts.Add(CreateTrendText(AddToY(trend.EndPoint, If(trend.Direction, 1, -1) * Chart.GetRelativeFromRealHeight(offset)), trend.Direction, CStr(Abs(trend.EndPrice - trend.StartPrice)), If(trend.Direction, ConfirmedTrendUpColor, ConfirmedTrendDownColor)))
                 trend.LengthText.Font.FontSize = TrendLengthTextFontSize + index * StepUpFontSizeIncrement
@@ -731,7 +828,8 @@ Namespace AnalysisTechniques
                 If TrendChannelsOn And index = 0 Then
                     trend.RegressionTL.ExtendRight = False
                     If HiLiteIndex = 0 Then
-                        SetFillTrendLine(trend.RegressionTL, AboveFillColor, BelowFillColor)
+                        'SetFillTrendLine(trend.RegressionTL, AboveFillColor, BelowFillColor)
+                        trend.RegressionTL.DrawZoneFill = False
                         trend.RegressionTL.Pen.Thickness = ConfirmedTrendRegressionLineThicknessHLite
                         trend.RegressionTL.OuterPen.Thickness = ConfirmedTrendChannelLineThicknessHLite
                     Else
@@ -747,29 +845,45 @@ Namespace AnalysisTechniques
                     trend.RegressionTL.HasParallel = True
                     trend.RegressionTL.IsRegressionLine = True
                     trend.RegressionTL.UseFixedStartRegressionFormula = RegressionMode
+                    trend.RegressionTL.OuterPen.Thickness = If(index = HiLiteIndex, ConfirmedTrendChannelLineThicknessHLite, ConfirmedTrendChannelLineThickness)
+                    trend.RegressionTL.Pen.Thickness = If(index = HiLiteIndex, ConfirmedTrendRegressionLineThicknessHLite, ConfirmedTrendRegressionLineThickness)
                     trend.RegressionTL.RefreshVisual()
                 End If
                 trend.StepUpIndex = index
 
                 trend.PointList.Add(trend.EndPoint)
 
-                If index = HiLiteIndex And Not AbcBarColoring And Not OsBarColoring Then BarColorRoutine(trend.StartBar, trend.EndBar, If(trend.Direction = Direction.Up, UpBarColor, DownBarColor))
+                If index = HiLiteIndex And Not AbcBarColoring Then BarColorRoutine(trend.StartBar, trend.EndBar, If(trend.Direction = Direction.Up, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
 
                 evnt = SwingEvent.NewSwing
 
                 trend.IsActive = True
+
+                trend.PotentialTL.Pen.Brush = New SolidColorBrush(If(trend.Direction = Direction.Up, PotentialTrendUpColor, PotentialTrendDownColor))
+                trend.PotentialTL.OuterPen.Brush = New SolidColorBrush(If(trend.Direction = Direction.Up, PotentialTrendUpColor, PotentialTrendDownColor))
+                trend.PotentialTL.ExtendRight = True
+                If index = HiLiteIndex Then
+                    trend.PotentialTL.OuterPen.Thickness = PotentialTrendChannelLineThicknessHLite
+                    trend.PotentialTL.Pen.Thickness = PotentialTrendRegressionLineThicknessHLite
+                Else
+                    trend.PotentialTL.OuterPen.Thickness = PotentialTrendChannelLineThickness
+                    trend.PotentialTL.Pen.Thickness = PotentialTrendRegressionLineThickness
+                End If
             ElseIf (bar.High >= trend.EndPrice And trend.Direction = Direction.Up) Or
-                   (bar.Low <= trend.EndPrice And trend.Direction = Direction.Down) Then
+                       (bar.Low <= trend.EndPrice And trend.Direction = Direction.Down) Then
                 ' extension
                 trend.EndBar = bar.Number
                 trend.EndPrice = If(trend.Direction = Direction.Up, bar.High, bar.Low)
+                If index = 0 And Not AbcBarColoring Then
+                    BarColorRoutine(trend.StartBar, trend.EndBar, If(trend.Direction, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
+                End If
 
                 trend.PointList(trend.PointList.Count - 1) = trend.EndPoint
                 Dim offset = TextSpacing + SwingLengthTextFontSize + TrendLengthTextFontSize * index + StepUpFontSizeIncrement * Max(index - 1, 0)
                 UpdateText(trend.LengthText, AddToY(trend.EndPoint, If(trend.Direction, 1, -1) * Chart.GetRelativeFromRealHeight(offset)), trend.Direction, CStr(Abs(trend.EndPrice - trend.StartPrice)), If(trend.Direction, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
                 trend.LengthText.Font.FontSize = TrendLengthTextFontSize + index * StepUpFontSizeIncrement
 
-                If index = HiLiteIndex And Not AbcBarColoring And Not OsBarColoring Then BarColorRoutine(trend.StartBar, trend.EndBar, If(trend.Direction = Direction.Up, UpBarColor, DownBarColor))
+                If index = HiLiteIndex And Not AbcBarColoring Then BarColorRoutine(trend.StartBar, trend.EndBar, If(trend.Direction = Direction.Up, ConfirmedTrendUpColor, ConfirmedTrendDownColor))
                 evnt = SwingEvent.Extension
             End If
             If evnt <> SwingEvent.None Or swingevnt Then
@@ -784,17 +898,17 @@ Namespace AnalysisTechniques
                     Dim bcLength As Decimal
                     Dim biggestC As Point
                     Dim biggestB As Point
-                    For i = lastSwing.PointList.Count - 1 To 0 Step -1
-                        Dim p As Point = lastSwing.PointList(i)
+                    For i = pointList.Count - 1 To 0 Step -1
+                        Dim p As Point = pointList(i)
                         If p.X >= trend.StartBar Then
                             If (trend.Direction = Direction.Down And p.Y > Round(cPoint.Y, 5)) Or
-                               (trend.Direction = Direction.Up And p.Y < Round(cPoint.Y, 5)) Then
+                                   (trend.Direction = Direction.Up And p.Y < Round(cPoint.Y, 5)) Then
                                 cPoint = p
                                 For j = i - 1 To 0 Step -1
-                                    Dim p2 As Point = lastSwing.PointList(j)
+                                    Dim p2 As Point = pointList(j)
                                     If p2.X >= trend.StartBar Then
                                         If (trend.Direction = Direction.Down And p2.Y > Round(cPoint.Y, 5)) Or
-                                            (trend.Direction = Direction.Up And p2.Y < Round(cPoint.Y, 5)) Then
+                                                (trend.Direction = Direction.Up And p2.Y < Round(cPoint.Y, 5)) Then
                                             Exit For
                                         Else
                                             If (trend.Direction = Direction.Down And Round(Abs(p2.Y - cPoint.Y), 5) > Round(bcLength, 5)) Or
@@ -847,16 +961,7 @@ Namespace AnalysisTechniques
             Return evnt
         End Function
         Private Sub CalculateSwingNeutralBar(ByRef trend As Swing, bar As BarData, rv As Decimal, index As Integer)
-            trend.PotentialTL.Pen.Brush = New SolidColorBrush(If(trend.Direction = Direction.Up, PotentialTrendUpColor, PotentialTrendDownColor))
-            trend.PotentialTL.OuterPen.Brush = New SolidColorBrush(If(trend.Direction = Direction.Up, PotentialTrendUpColor, PotentialTrendDownColor))
-            trend.PotentialTL.ExtendRight = True
-            If index = HiLiteIndex Then
-                trend.PotentialTL.OuterPen.Thickness = PotentialTrendChannelLineThicknessHLite
-                trend.PotentialTL.Pen.Thickness = PotentialTrendRegressionLineThicknessHLite
-            Else
-                trend.PotentialTL.OuterPen.Thickness = PotentialTrendChannelLineThickness
-                trend.PotentialTL.Pen.Thickness = PotentialTrendRegressionLineThickness
-            End If
+
 
             trend.PotentialTL.Coordinates = New LineCoordinates(trend.StartPoint, New Point(bar.Number, bar.Close))
             trend.RegressionTL.Coordinates = New LineCoordinates(trend.StartPoint, trend.EndPoint)
@@ -1004,12 +1109,12 @@ Namespace AnalysisTechniques
             If direction = Direction.Up Then label.VerticalAlignment = LabelVerticalAlignment.Bottom Else label.VerticalAlignment = LabelVerticalAlignment.Top
             Return label
         End Function
-        Sub UpdateText(label As Label, position As Point, direction As Direction, value As String, color As Color)
+        Sub UpdateText(label As Label, position As Point, direction As Direction, value As String, Optional color As Color = Nothing)
             If label IsNot Nothing Then
                 label.Text = FormatNumberLengthAndPrefix(value)
                 label.Tag = value
                 label.Location = AddToX(position, 0)
-                label.Font.Brush = New SolidColorBrush(color)
+                If color <> Nothing Then label.Font.Brush = New SolidColorBrush(color)
                 If direction = Direction.Up Then label.VerticalAlignment = LabelVerticalAlignment.Bottom Else label.VerticalAlignment = LabelVerticalAlignment.Top
             End If
         End Sub
@@ -1224,6 +1329,13 @@ Namespace AnalysisTechniques
         Dim hilite2 As Button
         Dim hilite3 As Button
         Dim hilite4 As Button
+
+        Dim btnPresetPattern1 As Button
+        Dim btnPresetPattern2 As Button
+        Dim btnPresetPattern3 As Button
+        Dim btnPresetPattern4 As Button
+        Dim btnPresetPattern5 As Button
+
         Dim increaseTrendHilite As Button
         Dim decreaseTrendHilite As Button
         Dim resetTrendHilite As Button
@@ -1298,7 +1410,7 @@ Namespace AnalysisTechniques
             bd.ContextMenu = c
             grabArea = New Border With {.BorderThickness = New Thickness(0), .BorderBrush = Brushes.Gray, .Background = Brushes.DarkBlue, .Margin = New Thickness(0.5)}
             grabArea.SetValue(Grid.RowSpanProperty, 1)
-            grabArea.Height = 17
+            'grabArea.Height = 17
             grd.Children.Add(grabArea)
         End Sub
         Sub SetRows()
@@ -1337,11 +1449,12 @@ Namespace AnalysisTechniques
             Grid.SetRow(setLastSwingToChannel, 6)
             Grid.SetRow(setAllSwingsLines, 7)
 
-            Grid.SetRow(osColorToggle, 6)
-            Grid.SetRow(abcColorToggle, 7)
-            Grid.SetRow(abcChannelToggle, 8)
+
+            Grid.SetRow(abcColorToggle, 6)
+            Grid.SetRow(abcChannelToggle, 7)
+
             Grid.SetColumn(abcColorToggle, 1)
-            Grid.SetColumn(osColorToggle, 1)
+
             Grid.SetColumn(abcChannelToggle, 1)
 
             Grid.SetRow(addRVMinMoveSwing, 8)
@@ -1349,16 +1462,25 @@ Namespace AnalysisTechniques
             Grid.SetRow(rvBaseValueSwing, 10)
             Grid.SetRow(currentRVPopupBtnSwing, 11)
 
-            Grid.SetRow(currentRBPopupBtn, 9)
-            Grid.SetRow(addRBMinMove, 10)
-            Grid.SetRow(subtractRBMinMove, 11)
+            Grid.SetRow(currentRBPopupBtn, 8)
+            Grid.SetRow(addRBMinMove, 9)
+            Grid.SetRow(subtractRBMinMove, 10)
             Grid.SetColumn(currentRBPopupBtn, 1)
             Grid.SetColumn(addRBMinMove, 1)
             Grid.SetColumn(subtractRBMinMove, 1)
 
-            Grid.SetColumnSpan(grabArea, 2)
-            Grid.SetRow(grabArea, 12)
 
+            Grid.SetRow(grabArea, 11)
+            Grid.SetColumn(grabArea, 1)
+
+            Grid.SetRow(btnPresetPattern1, 12)
+            Grid.SetColumn(btnPresetPattern1, 0)
+            Grid.SetRow(btnPresetPattern2, 12)
+            Grid.SetColumn(btnPresetPattern2, 1)
+            Grid.SetRow(btnPresetPattern3, 13)
+            Grid.SetColumn(btnPresetPattern3, 0)
+            Grid.SetRow(btnPresetPattern4, 13)
+            Grid.SetColumn(btnPresetPattern4, 1)
 
             grd.Children.Add(addStepUpMinMove)
             grd.Children.Add(subtractStepUpMinMove)
@@ -1385,8 +1507,12 @@ Namespace AnalysisTechniques
             grd.Children.Add(increaseTrendHilite)
             grd.Children.Add(decreaseTrendHilite)
             grd.Children.Add(abcColorToggle)
-            grd.Children.Add(osColorToggle)
+            'grd.Children.Add(osColorToggle)
             grd.Children.Add(abcChannelToggle)
+            grd.Children.Add(btnPresetPattern1)
+            grd.Children.Add(btnPresetPattern2)
+            grd.Children.Add(btnPresetPattern3)
+            grd.Children.Add(btnPresetPattern4)
             'grd.Children.Add(rBtn)
             'grd.Children.Add(hilite1)
             'grd.Children.Add(hilite2)
@@ -1428,6 +1554,22 @@ Namespace AnalysisTechniques
             hilite2 = New Button With {.Tag = 1, .Background = Brushes.White, .Padding = New Thickness(3, 2, 3, 2), .Foreground = Brushes.Black, .Margin = New Thickness(0.5), .FontSize = fontsize, .MinWidth = 19, .Content = "2"}
             hilite3 = New Button With {.Tag = 2, .Background = Brushes.White, .Padding = New Thickness(3, 2, 3, 2), .Foreground = Brushes.Black, .Margin = New Thickness(0.5), .FontSize = fontsize, .MinWidth = 19, .Content = "3"}
             hilite4 = New Button With {.Tag = 3, .Background = Brushes.White, .Padding = New Thickness(3, 2, 3, 2), .Foreground = Brushes.Black, .Margin = New Thickness(0.5), .FontSize = fontsize, .MinWidth = 19, .Content = "4"}
+
+            btnPresetPattern1 = New Button With {.Tag = 1, .Background = Brushes.White, .Padding = New Thickness(3, 2, 3, 2), .Foreground = Brushes.Black, .Margin = New Thickness(0.5), .FontSize = fontsize, .MinWidth = 19, .Content = "1"}
+            btnPresetPattern2 = New Button With {.Tag = 2, .Background = Brushes.White, .Padding = New Thickness(3, 2, 3, 2), .Foreground = Brushes.Black, .Margin = New Thickness(0.5), .FontSize = fontsize, .MinWidth = 19, .Content = "2"}
+            btnPresetPattern3 = New Button With {.Tag = 3, .Background = Brushes.White, .Padding = New Thickness(3, 2, 3, 2), .Foreground = Brushes.Black, .Margin = New Thickness(0.5), .FontSize = fontsize, .MinWidth = 19, .Content = "3"}
+            btnPresetPattern4 = New Button With {.Tag = 4, .Background = Brushes.White, .Padding = New Thickness(3, 2, 3, 2), .Foreground = Brushes.Black, .Margin = New Thickness(0.5), .FontSize = fontsize, .MinWidth = 19, .Content = "4"}
+
+            Dim presetPatternClick =
+                Sub(sender As Object, e As EventArgs)
+                    btnPresetPattern1.Background = Brushes.White
+                    btnPresetPattern2.Background = Brushes.White
+                    btnPresetPattern3.Background = Brushes.White
+                    btnPresetPattern4.Background = Brushes.White
+                    CType(sender, Button).Background = Brushes.Orange
+                    CurrentPresetPattern = sender.Tag
+                    Chart.ReApplyAnalysisTechnique(Me)
+                End Sub
             Dim hilite = Sub(sender As Object, e As EventArgs)
                              hilite1.Background = Brushes.White
                              hilite2.Background = Brushes.White
@@ -1441,6 +1583,11 @@ Namespace AnalysisTechniques
             AddHandler hilite2.Click, hilite
             AddHandler hilite3.Click, hilite
             AddHandler hilite4.Click, hilite
+
+            AddHandler btnPresetPattern1.Click, presetPatternClick
+            AddHandler btnPresetPattern2.Click, presetPatternClick
+            AddHandler btnPresetPattern3.Click, presetPatternClick
+            AddHandler btnPresetPattern4.Click, presetPatternClick
 
             stepUpPopup = New Popup With {.Placement = PlacementMode.Left, .PlacementTarget = currentStepUpPopupBtn, .Width = 208, .Height = 52, .StaysOpen = False}
             stepUpPopupGrid = New Grid With {.Background = Brushes.White}
@@ -1705,7 +1852,6 @@ Namespace AnalysisTechniques
             AddHandler abcColorToggle.Click,
                     Sub()
                         AbcBarColoring = Not AbcBarColoring
-                        OsBarColoring = False
                         Chart.ReApplyAnalysisTechnique(Me)
                     End Sub
             AddHandler abcChannelToggle.Click,
@@ -1715,8 +1861,8 @@ Namespace AnalysisTechniques
                 End Sub
             AddHandler osColorToggle.Click,
                 Sub()
-                    AbcBarColoring = False
-                    OsBarColoring = True
+                    AbcChannelMode = False
+                    OsIsBarColoring = True
                     Chart.ReApplyAnalysisTechnique(Me)
                 End Sub
         End Sub
@@ -1794,7 +1940,8 @@ Namespace AnalysisTechniques
                 decreaseTrendHilite.IsEnabled = Not AbcChannelMode
                 abcColorToggle.IsEnabled = Not AbcChannelMode
                 toggleButtonTrend.IsEnabled = Not AbcChannelMode
-                osColorToggle.IsEnabled = Not AbcChannelMode
+
+                abcColorToggle.FontWeight = If(AbcBarColoring, FontWeights.Bold, FontWeights.Normal)
             End If
         End Sub
         Public Sub UpdateChartPadColor(color As Color) Implements IChartPadAnalysisTechnique.UpdateChartPadColor
