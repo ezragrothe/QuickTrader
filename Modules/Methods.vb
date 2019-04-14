@@ -310,6 +310,9 @@ Public Module Methods
             Return CStr(number)
         End If
     End Function
+    Public Function VertifyText(text As String) As String
+        Return Join(Array.ConvertAll(Of Char, String)(text.ToCharArray, AddressOf Convert.ToString), vbNewLine)
+    End Function
     Public Function TripleDESEncrypt(ByVal text As String) As String
         Dim tripleDES As New Security.Cryptography.TripleDESCryptoServiceProvider
         Dim key As String = "QuickTraderchartograph"

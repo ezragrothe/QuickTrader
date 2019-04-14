@@ -1430,13 +1430,13 @@ Public Class Chart
                         'SetState(btnQuantity, True)
                         SetState(btnCancel, True)
                         btnTransmit.Background = New SolidColorBrush(order.SelectedColor)
-                        btnTransmit.Foreground = New SolidColorBrush(GetForegroundColor(order.SelectedColor))
+                        btnTransmit.Content.Foreground = New SolidColorBrush(GetForegroundColor(order.SelectedColor))
                         SetState(btnTransmit, order.TransmitUpdateButtonVisible)
                         If order.IsUpdateNeeded Then
-                            btnTransmit.Content = "Update"
+                            btnTransmit.Content.Text = VertifyText("UPDATE")
                             btnTransmit.Tag = True
                         Else
-                            btnTransmit.Content = "Transmit"
+                            btnTransmit.Content.Text = VertifyText("TRANSMIT")
                             btnTransmit.Tag = False
                         End If
                     End If
@@ -1446,7 +1446,7 @@ Public Class Chart
             For Each item In buttonDatabase
                 If item.Key > 2 And item.Key < 7 Then
                     item.Value.Background = New SolidColorBrush(buttonColorMatrix(item.Key))
-                    item.Value.Foreground = Brushes.White
+                    item.Value.Content.Foreground = Brushes.White
                 End If
             Next
             If SelectedOrder IsNot Nothing AndAlso SelectedOrder.OrderStatus <> OrderStatus.Filled AndAlso SelectedOrder.OrderStatus <> OrderStatus.ApiPending AndAlso SelectedOrder.OrderStatus <> OrderStatus.Submitted Then
@@ -1463,9 +1463,9 @@ Public Class Chart
                 End Select
                 For Each item In buttonDatabase
                     If item.Key > 2 And item.Key < 7 Then
-                        If item.Key = index And CStr(item.Value.Content) = CStr(SelectedOrder.Quantity) Then
+                        If item.Key = index And CStr(item.Value.Content.Text) = CStr(SelectedOrder.Quantity) Then
                             item.Value.Background = Brushes.White
-                            item.Value.Foreground = Brushes.Black
+                            item.Value.Content.Foreground = Brushes.Black
                         End If
                     End If
                 Next
@@ -1781,8 +1781,9 @@ Public Class Chart
                 End Function
         Dim getButton =
                 Function(text As String, row As Integer, col As Integer, rowSpan As Integer, colSpan As Integer, tag As Object, operation As RoutedEventHandler, category As Integer) As Border
-                    Dim b = New Button With {.Content = text, .Background = New SolidColorBrush(buttonColorMatrix(category)), .Foreground = New SolidColorBrush(buttonForegroundMatrix(category)), .FontWeight = FontWeights.Bold, .FontSize = 16.5, .MinHeight = 28, .MinWidth = 34, .Tag = tag}
-                    Dim g As New Border With {.Background = New SolidColorBrush(buttonColorMatrix(category)), .BorderBrush = Brushes.LightGray, .BorderThickness = New Thickness(0), .CornerRadius = New CornerRadius(3), .Margin = New Thickness(0, 0, 0, 3)}
+                    Dim t As New TextBlock With {.LineHeight = 14, .Background = Brushes.Transparent, .LineStackingStrategy = LineStackingStrategy.BlockLineHeight, .HorizontalAlignment = HorizontalAlignment.Center, .VerticalAlignment = VerticalAlignment.Center, .FontSize = 14.5, .FontWeight = FontWeights.Bold, .Text = text, .Foreground = New SolidColorBrush(buttonForegroundMatrix(category)), .Margin = New Thickness(0, 3, 0, 0)}
+                    Dim b = New Button With {.Content = t, .Background = New SolidColorBrush(buttonColorMatrix(category)), .MinHeight = 28, .MinWidth = 34, .MaxWidth = 34, .Tag = tag}
+                    Dim g As New Border With {.Background = New SolidColorBrush(buttonColorMatrix(category)), .BorderBrush = Brushes.LightGray, .BorderThickness = New Thickness(0), .CornerRadius = New CornerRadius(3), .Margin = New Thickness(0), .MaxWidth = 34}
                     g.Child = b
                     Grid.SetRow(g, row)
                     Grid.SetColumn(g, col)
@@ -1805,10 +1806,10 @@ Public Class Chart
             Sub(sender As Object, e As EventArgs)
                 Dim order As OrderControl
                 If sender.Tag = True Then
-                    order = New OrderControl(Me, IB.Contract(TickerID)) With {.Color = Colors.Green, .Quantity = sender.Content, .SelectedColor = Colors.Green, .ButtonHoverColor = Colors.LightGreen,
+                    order = New OrderControl(Me, IB.Contract(TickerID)) With {.Color = Colors.Green, .Quantity = sender.Content.Text, .SelectedColor = Colors.Green, .ButtonHoverColor = Colors.LightGreen,
                         .Price = Price, .OrderType = OrderType.MKT, .OrderAction = ActionSide.BUY}
                 Else
-                    order = New OrderControl(Me, IB.Contract(TickerID)) With {.Color = Colors.Red, .Quantity = sender.Content, .SelectedColor = Colors.Red, .ButtonHoverColor = Colors.Pink,
+                    order = New OrderControl(Me, IB.Contract(TickerID)) With {.Color = Colors.Red, .Quantity = sender.Content.Text, .SelectedColor = Colors.Red, .ButtonHoverColor = Colors.Pink,
                         .Price = Price, .OrderType = OrderType.MKT, .OrderAction = ActionSide.SELL}
                 End If
                 Children.Add(order)
@@ -1821,16 +1822,16 @@ Public Class Chart
                    (SelectedOrder.OrderType = OrderType.STP And (SelectedOrder.OrderStatus = OrderStatus.Filled Or SelectedOrder.OrderStatus = OrderStatus.Submitted Or SelectedOrder.OrderStatus = OrderStatus.ApiPending Or ((sender.Tag = True And SelectedOrder.OrderAction = ActionSide.Sell) Or (sender.Tag = False And SelectedOrder.OrderAction = ActionSide.Buy)))) Then
                     Dim order As OrderControl
                     If sender.Tag = True Then
-                        order = New OrderControl(Me, IB.Contract(TickerID)) With {.Color = Color.FromArgb(255, 204, 204, 204), .SelectedColor = Colors.Orange, .Quantity = sender.Content, .ButtonHoverColor = Color.FromArgb(255, 255, 176, 98),
+                        order = New OrderControl(Me, IB.Contract(TickerID)) With {.Color = Color.FromArgb(255, 204, 204, 204), .SelectedColor = Colors.Orange, .Quantity = sender.Content.Text, .ButtonHoverColor = Color.FromArgb(255, 255, 176, 98),
                         .Price = Price, .OrderType = OrderType.STP, .OrderAction = ActionSide.BUY}
                     Else
-                        order = New OrderControl(Me, IB.Contract(TickerID)) With {.Color = Color.FromArgb(255, 204, 204, 204), .SelectedColor = Color.FromArgb(255, 0, 127, 255), .Quantity = sender.Content, .ButtonHoverColor = Colors.LightBlue,
+                        order = New OrderControl(Me, IB.Contract(TickerID)) With {.Color = Color.FromArgb(255, 204, 204, 204), .SelectedColor = Color.FromArgb(255, 0, 127, 255), .Quantity = sender.Content.Text, .ButtonHoverColor = Colors.LightBlue,
                         .Price = Price, .OrderType = OrderType.STP, .OrderAction = ActionSide.SELL}
                     End If
                     Children.Add(order)
                     order.IsSelected = True
                 Else
-                    SelectedOrder.Quantity = sender.Content
+                    SelectedOrder.Quantity = sender.Content.Text
                     SelectedOrder.RefreshVisual()
                 End If
             End Sub
@@ -1840,16 +1841,16 @@ Public Class Chart
                    (SelectedOrder.OrderType = OrderType.LMT And (SelectedOrder.OrderStatus = OrderStatus.Filled Or SelectedOrder.OrderStatus = OrderStatus.Submitted Or SelectedOrder.OrderStatus = OrderStatus.ApiPending Or ((sender.Tag = True And SelectedOrder.OrderAction = ActionSide.Sell) Or (sender.Tag = False And SelectedOrder.OrderAction = ActionSide.Buy)))) Then
                     Dim order As OrderControl
                     If sender.Tag = True Then
-                        order = New OrderControl(Me, IB.Contract(TickerID)) With {.Color = Color.FromArgb(255, 204, 204, 204), .SelectedColor = Colors.Green, .Quantity = sender.Content, .ButtonHoverColor = Colors.LightGreen,
+                        order = New OrderControl(Me, IB.Contract(TickerID)) With {.Color = Color.FromArgb(255, 204, 204, 204), .SelectedColor = Colors.Green, .Quantity = sender.Content.Text, .ButtonHoverColor = Colors.LightGreen,
                         .Price = Price, .OrderType = OrderType.LMT, .OrderAction = ActionSide.BUY}
                     Else
-                        order = New OrderControl(Me, IB.Contract(TickerID)) With {.Color = Color.FromArgb(255, 204, 204, 204), .SelectedColor = Color.FromArgb(255, 205, 0, 0), .Quantity = sender.Content, .ButtonHoverColor = Colors.Pink,
+                        order = New OrderControl(Me, IB.Contract(TickerID)) With {.Color = Color.FromArgb(255, 204, 204, 204), .SelectedColor = Color.FromArgb(255, 205, 0, 0), .Quantity = sender.Content.Text, .ButtonHoverColor = Colors.Pink,
                         .Price = Price, .OrderType = OrderType.LMT, .OrderAction = ActionSide.SELL}
                     End If
                     Children.Add(order)
                     order.IsSelected = True
                 Else
-                    SelectedOrder.Quantity = sender.Content
+                    SelectedOrder.Quantity = sender.Content.Text
                     SelectedOrder.RefreshVisual()
                 End If
             End Sub
@@ -1903,79 +1904,97 @@ Public Class Chart
                 Next
             End Sub
 
-        grd.Children.Add(getLabel("STOP", 1, 8, 6))
-        grd.Children.Add(getLabel("MARKET", 1, 0, 6))
+        Dim marketGrid As New Grid
+        Grid.SetRowSpan(marketGrid, 5)
+        marketGrid.RowDefinitions.Add(New RowDefinition() With {.Height = New GridLength(1, GridUnitType.Star)})
+        marketGrid.RowDefinitions.Add(New RowDefinition() With {.Height = New GridLength(1, GridUnitType.Auto)})
+        marketGrid.RowDefinitions.Add(New RowDefinition() With {.Height = New GridLength(1, GridUnitType.Star)})
+        marketGrid.RowDefinitions.Add(New RowDefinition() With {.Height = New GridLength(1, GridUnitType.Auto)})
+        marketGrid.RowDefinitions.Add(New RowDefinition() With {.Height = New GridLength(1, GridUnitType.Star)})
 
-        grd.Children.Add(getLabel("SELL", 0, 6, 1))
+        marketGrid.Children.Add(getLabel("SELL", 0, 0, 1))
+        CType(CType(marketGrid.Children(marketGrid.Children.Count - 1), Border).Child, Controls.Label).Foreground = Brushes.Red
+        marketGrid.Children.Add(getLabel("MARKET", 2, 0, 1))
+        marketGrid.Children.Add(getLabel("BUY", 4, 0, 1))
+        CType(CType(marketGrid.Children(marketGrid.Children.Count - 1), Border).Child, Controls.Label).Foreground = Brushes.Green
+
+        grd.Children.Add(marketGrid)
+
+        Dim vertBar = New Border With {.BorderThickness = New Thickness(1, 0, 0, 0), .BorderBrush = Brushes.Blue, .Background = Brushes.Transparent, .MinWidth = 1, .Margin = New Thickness(3, 0, 0, 0)}
+        Grid.SetRow(vertBar, 0) : Grid.SetRowSpan(vertBar, 5) : Grid.SetColumn(vertBar, 1)
+        grd.Children.Add(vertBar)
+
+        grd.Children.Add(getLabel("Sell Limit", 1, 2, 1))
         CType(CType(grd.Children(grd.Children.Count - 1), Border).Child, Controls.Label).Foreground = Brushes.Red
         CType(CType(grd.Children(grd.Children.Count - 1), Border).Child, Controls.Label).Margin = New Thickness(4, 0, 4, 0)
-        grd.Children.Add(getLabel("BUY", 2, 6, 1))
+        grd.Children.Add(getLabel("Buy Limit", 3, 2, 1))
         CType(CType(grd.Children(grd.Children.Count - 1), Border).Child, Controls.Label).Foreground = Brushes.Green
         CType(CType(grd.Children(grd.Children.Count - 1), Border).Child, Controls.Label).Margin = New Thickness(4, 0, 4, 0)
-        grd.Children.Add(getLabel("SELL", 0, 20, 1))
-        CType(CType(grd.Children(grd.Children.Count - 1), Border).Child, Controls.Label).Foreground = Brushes.Red
+
+        grd.Children.Add(getLabel("Sell Stop", 0, 2, 1))
+        CType(CType(grd.Children(grd.Children.Count - 1), Border).Child, Controls.Label).Foreground = New SolidColorBrush(Color.FromArgb(255, 94, 130, 255))
         CType(CType(grd.Children(grd.Children.Count - 1), Border).Child, Controls.Label).Margin = New Thickness(4, 0, 4, 0)
-        grd.Children.Add(getLabel("BUY", 2, 20, 1))
-        CType(CType(grd.Children(grd.Children.Count - 1), Border).Child, Controls.Label).Foreground = Brushes.Green
+        grd.Children.Add(getLabel("Buy Stop", 4, 2, 1))
+        CType(CType(grd.Children(grd.Children.Count - 1), Border).Child, Controls.Label).Foreground = New SolidColorBrush(Color.FromArgb(255, 236, 141, 0))
         CType(CType(grd.Children(grd.Children.Count - 1), Border).Child, Controls.Label).Margin = New Thickness(4, 0, 4, 0)
 
         'markets
-        grd.Children.Add(getButton(ValidQuantities(0), 2, 5, 1, 1, True, marketAction, 1))
-        grd.Children.Add(getButton(ValidQuantities(1), 2, 4, 1, 1, True, marketAction, 1))
-        grd.Children.Add(getButton(ValidQuantities(2), 2, 3, 1, 1, True, marketAction, 1))
-        grd.Children.Add(getButton(ValidQuantities(3), 2, 2, 1, 1, True, marketAction, 1))
-        grd.Children.Add(getButton(ValidQuantities(4), 2, 1, 1, 1, True, marketAction, 1))
-        grd.Children.Add(getButton(ValidQuantities(5), 2, 0, 1, 1, True, marketAction, 1))
-        grd.Children.Add(getButton(ValidQuantities(0), 0, 5, 1, 1, False, marketAction, 2))
-        grd.Children.Add(getButton(ValidQuantities(1), 0, 4, 1, 1, False, marketAction, 2))
-        grd.Children.Add(getButton(ValidQuantities(2), 0, 3, 1, 1, False, marketAction, 2))
-        grd.Children.Add(getButton(ValidQuantities(3), 0, 2, 1, 1, False, marketAction, 2))
-        grd.Children.Add(getButton(ValidQuantities(4), 0, 1, 1, 1, False, marketAction, 2))
-        grd.Children.Add(getButton(ValidQuantities(5), 0, 0, 1, 1, False, marketAction, 2))
+        marketGrid.Children.Add(getButton(ValidQuantities(1), 1, 0, 1, 1, True, marketAction, 1))
+        'grd.Children.Add(getButton(ValidQuantities(1), 2, 1, 1, 1, True, marketAction, 1))
+        'grd.Children.Add(getButton(ValidQuantities(2), 2, 0, 1, 1, True, marketAction, 1))
+        'grd.Children.Add(getButton(ValidQuantities(3), 2, 2, 1, 1, True, marketAction, 1))
+        'grd.Children.Add(getButton(ValidQuantities(4), 2, 1, 1, 1, True, marketAction, 1))
+        'grd.Children.Add(getButton(ValidQuantities(5), 2, 0, 1, 1, True, marketAction, 1))
+        marketGrid.Children.Add(getButton(ValidQuantities(0), 3, 0, 1, 1, False, marketAction, 2))
+        'grd.Children.Add(getButton(ValidQuantities(1), 0, 1, 1, 1, False, marketAction, 2))
+        'grd.Children.Add(getButton(ValidQuantities(2), 0, 0, 1, 1, False, marketAction, 2))
+        'grd.Children.Add(getButton(ValidQuantities(3), 0, 2, 1, 1, False, marketAction, 2))
+        'grd.Children.Add(getButton(ValidQuantities(4), 0, 1, 1, 1, False, marketAction, 2))
+        'grd.Children.Add(getButton(ValidQuantities(5), 0, 0, 1, 1, False, marketAction, 2))
 
         'stops
-        grd.Children.Add(getButton(ValidQuantities(0), 2, 13, 1, 1, False, stopAction, 3))
-        grd.Children.Add(getButton(ValidQuantities(1), 2, 12, 1, 1, False, stopAction, 3))
-        grd.Children.Add(getButton(ValidQuantities(2), 2, 11, 1, 1, False, stopAction, 3))
-        grd.Children.Add(getButton(ValidQuantities(3), 2, 10, 1, 1, False, stopAction, 3))
-        grd.Children.Add(getButton(ValidQuantities(4), 2, 9, 1, 1, False, stopAction, 3))
-        grd.Children.Add(getButton(ValidQuantities(5), 2, 8, 1, 1, False, stopAction, 3))
-        grd.Children.Add(getButton(ValidQuantities(0), 0, 13, 1, 1, True, stopAction, 4))
-        grd.Children.Add(getButton(ValidQuantities(1), 0, 12, 1, 1, True, stopAction, 4))
-        grd.Children.Add(getButton(ValidQuantities(2), 0, 11, 1, 1, True, stopAction, 4))
-        grd.Children.Add(getButton(ValidQuantities(3), 0, 10, 1, 1, True, stopAction, 4))
-        grd.Children.Add(getButton(ValidQuantities(4), 0, 9, 1, 1, True, stopAction, 4))
-        grd.Children.Add(getButton(ValidQuantities(5), 0, 8, 1, 1, True, stopAction, 4))
+        grd.Children.Add(getButton(ValidQuantities(0), 0, 5, 1, 1, False, stopAction, 3))
+        grd.Children.Add(getButton(ValidQuantities(1), 0, 4, 1, 1, False, stopAction, 3))
+        grd.Children.Add(getButton(ValidQuantities(2), 0, 3, 1, 1, False, stopAction, 3))
+        'grd.Children.Add(getButton(ValidQuantities(3), 2, 10, 1, 1, False, stopAction, 3))
+        'grd.Children.Add(getButton(ValidQuantities(4), 2, 9, 1, 1, False, stopAction, 3))
+        'grd.Children.Add(getButton(ValidQuantities(5), 2, 8, 1, 1, False, stopAction, 3))
+        grd.Children.Add(getButton(ValidQuantities(0), 4, 5, 1, 1, True, stopAction, 4))
+        grd.Children.Add(getButton(ValidQuantities(1), 4, 4, 1, 1, True, stopAction, 4))
+        grd.Children.Add(getButton(ValidQuantities(2), 4, 3, 1, 1, True, stopAction, 4))
+        'grd.Children.Add(getButton(ValidQuantities(3), 0, 10, 1, 1, True, stopAction, 4))
+        'grd.Children.Add(getButton(ValidQuantities(4), 0, 9, 1, 1, True, stopAction, 4))
+        'grd.Children.Add(getButton(ValidQuantities(5), 0, 8, 1, 1, True, stopAction, 4))
 
         'limits
-        grd.Children.Add(getButton(ValidQuantities(0), 2, 19, 1, 1, True, limitAction, 5))
-        grd.Children.Add(getButton(ValidQuantities(1), 2, 18, 1, 1, True, limitAction, 5))
-        grd.Children.Add(getButton(ValidQuantities(2), 2, 17, 1, 1, True, limitAction, 5))
-        grd.Children.Add(getButton(ValidQuantities(3), 2, 16, 1, 1, True, limitAction, 5))
-        grd.Children.Add(getButton(ValidQuantities(4), 2, 15, 1, 1, True, limitAction, 5))
-        grd.Children.Add(getButton(ValidQuantities(5), 2, 14, 1, 1, True, limitAction, 5))
-        grd.Children.Add(getButton(ValidQuantities(0), 0, 19, 1, 1, False, limitAction, 6))
-        grd.Children.Add(getButton(ValidQuantities(1), 0, 18, 1, 1, False, limitAction, 6))
-        grd.Children.Add(getButton(ValidQuantities(2), 0, 17, 1, 1, False, limitAction, 6))
-        grd.Children.Add(getButton(ValidQuantities(3), 0, 16, 1, 1, False, limitAction, 6))
-        grd.Children.Add(getButton(ValidQuantities(4), 0, 15, 1, 1, False, limitAction, 6))
-        grd.Children.Add(getButton(ValidQuantities(5), 0, 14, 1, 1, False, limitAction, 6))
+        grd.Children.Add(getButton(ValidQuantities(0), 3, 5, 1, 1, True, limitAction, 5))
+        grd.Children.Add(getButton(ValidQuantities(1), 3, 4, 1, 1, True, limitAction, 5))
+        grd.Children.Add(getButton(ValidQuantities(2), 3, 3, 1, 1, True, limitAction, 5))
+        'grd.Children.Add(getButton(ValidQuantities(3), 2, 16, 1, 1, True, limitAction, 5))
+        'grd.Children.Add(getButton(ValidQuantities(4), 2, 15, 1, 1, True, limitAction, 5))
+        'grd.Children.Add(getButton(ValidQuantities(5), 2, 14, 1, 1, True, limitAction, 5))
+        grd.Children.Add(getButton(ValidQuantities(0), 1, 5, 1, 1, False, limitAction, 6))
+        grd.Children.Add(getButton(ValidQuantities(1), 1, 4, 1, 1, False, limitAction, 6))
+        grd.Children.Add(getButton(ValidQuantities(2), 1, 3, 1, 1, False, limitAction, 6))
+        'grd.Children.Add(getButton(ValidQuantities(3), 0, 16, 1, 1, False, limitAction, 6))
+        'grd.Children.Add(getButton(ValidQuantities(4), 0, 15, 1, 1, False, limitAction, 6))
+        'grd.Children.Add(getButton(ValidQuantities(5), 0, 14, 1, 1, False, limitAction, 6))
 
 
         'grd.Children.Add(getBorder(0, 12, 12, 0, 3, 1, Colors.White))
 
-        btnTransmit = getButton("Transmit", 1, 18, 1, 2, False, transmitAction, 0).Child
-        btnCancel = getButton("Cancel", 1, 16, 1, 2, False, cancelAction, 8).Child
-        grd.Children.Add(getButton("OCA", 1, 14, 1, 2, False, ocaAction, 10))
-        Dim btnTab As Button = getButton("TAB", 1, 20, 1, 1, False, tabAction, 7).Child
+        btnTransmit = getButton(VertifyText("TRANSMIT"), 0, 7, 5, 1, False, transmitAction, 0).Child
+        btnCancel = getButton(VertifyText("CANCEL"), 0, 9, 5, 1, False, cancelAction, 8).Child
+        grd.Children.Add(getButton(VertifyText("OCA"), 0, 6, 5, 1, False, ocaAction, 10))
+        Dim btnTab As Button = getButton(VertifyText("TAB"), 0, 8, 5, 1, False, tabAction, 7).Child
         btnTransmit.FontSize = 15
         btnTab.Margin = New Thickness(0, 0, -4, 0)
         grd.Children.Add(btnTransmit.Parent)
         grd.Children.Add(btnCancel.Parent)
         grd.Children.Add(btnTab.Parent)
 
-        Dim dragger = New Border With {.BorderThickness = New Thickness(1, 0, 0, 0), .BorderBrush = Brushes.Blue, .Background = Brushes.Transparent, .MinWidth = 1, .Margin = New Thickness(2, -4, 4, -3)}
-        Grid.SetRow(dragger, 0) : Grid.SetRowSpan(dragger, 3) : Grid.SetColumn(dragger, 7)
+        Dim dragger = New Border With {.BorderThickness = New Thickness(0, 1, 0, 0), .BorderBrush = Brushes.Blue, .Background = Brushes.Transparent, .MinWidth = 1, .Margin = New Thickness(0, 1, 0, 1)}
+        Grid.SetRow(dragger, 2) : Grid.SetColumnSpan(dragger, 4) : Grid.SetColumn(dragger, 2) : dragger.VerticalAlignment = VerticalAlignment.Center
         grd.Children.Add(dragger)
 
         'QuantityButtonGrid = New Grid

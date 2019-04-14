@@ -122,7 +122,7 @@ Public MustInherit Class ChartDrawingVisual
             popup.BorderThickness = New Thickness(0)
             popup.Background = Brushes.Transparent
             popup.Placement = PlacementMode.Relative
-            popup.PlacementRectangle = New Rect(Parent.PointToScreen(New Point(4, Parent.Settings("TimeBarHeight").Value + 4)), New Size(100, 300))
+            popup.PlacementRectangle = New Rect(Parent.PointToScreen(New Point(Parent.ActualWidth / 3 * 2, Parent.Settings("TimeBarHeight").Value + 4)), New Size(100, 300))
             TextOptions.SetTextFormattingMode(popup, TextFormattingMode.Display)
             popupClickLocation = location
             DrawPopup()
@@ -145,14 +145,14 @@ Public MustInherit Class ChartDrawingVisual
             bd.Background = Brushes.Black
             bd.Child = grd
             grd.Margin = New Thickness(3)
-            grd.MinWidth = 150
+            grd.MinWidth = 200
             grd.ColumnDefinitions.Add(New ColumnDefinition With {.Width = New GridLength(1, GridUnitType.Star)})
             grd.ColumnDefinitions.Add(New ColumnDefinition With {.Width = New GridLength(1, GridUnitType.Star)})
             For Each item In PopupInformation()
                 grd.RowDefinitions.Add(New RowDefinition With {.Height = New GridLength(1, GridUnitType.Auto)})
-                Dim textName As New TextBlock With {.Text = item.Key, .FontSize = 15, .Foreground = Brushes.White, .HorizontalAlignment = HorizontalAlignment.Left, .VerticalAlignment = VerticalAlignment.Center}
+                Dim textName As New TextBlock With {.Text = item.Key, .FontSize = 20, .Foreground = Brushes.White, .HorizontalAlignment = HorizontalAlignment.Left, .VerticalAlignment = VerticalAlignment.Center}
                 Grid.SetRow(textName, grd.RowDefinitions.Count - 1)
-                Dim textValue As New TextBlock With {.Text = item.Value, .FontSize = 15, .Foreground = Brushes.White, .HorizontalAlignment = HorizontalAlignment.Right, .VerticalAlignment = VerticalAlignment.Center}
+                Dim textValue As New TextBlock With {.Text = item.Value, .FontSize = 20, .Foreground = Brushes.White, .HorizontalAlignment = HorizontalAlignment.Right, .VerticalAlignment = VerticalAlignment.Center}
                 Grid.SetRow(textValue, grd.RowDefinitions.Count - 1)
                 Grid.SetColumn(textValue, 1)
                 grd.Children.Add(textName)

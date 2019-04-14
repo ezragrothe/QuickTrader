@@ -178,6 +178,8 @@
         Public Property PushCountText As Label
         Public Property LengthTexts As New List(Of Label)
         Public Property BCText As Label
+        Public Property BCBarCountText As Label
+        Public Property LengthBarCountText As Label
         Public Property TargetText As Label
         Public Property ExtendTargetText As Label
         'Public Property BarCountText As Label

@@ -650,7 +650,7 @@ Namespace AnalysisTechniques
                                         .RangeText.VerticalAlignment = LabelVerticalAlignment.Bottom
                                     End If
                                     .RangeText.Location = rangetextPoint
-                                    .RangeText.Text = Round(GetDollarValue(high.Y - low.Y), 0)
+                                    .RangeText.Text = Round(GetDollarValue(high.Y - low.Y), 0) / 10
                                 Else
                                     .RangeText.Text = ""
                                 End If
@@ -660,6 +660,9 @@ Namespace AnalysisTechniques
                 Else
                     'multiple day box
                     If boxIsStarted Then
+                        If CurrentBar.Number = 1304 Then
+                            Dim a As New Object
+                        End If
                         If prevBarDate.DayOfYear <> barDate.DayOfYear And spannedDayCount >= MultipleDaySpan And prevSpannedDayCount < MultipleDaySpan Then
                             StopBox()
                             StartBox()
@@ -680,6 +683,9 @@ Namespace AnalysisTechniques
                     If prevBarDate.DayOfYear <> barDate.DayOfYear Then
                         prevSpannedDayCount = spannedDayCount
                         spannedDayCount += barDate.DayOfYear - prevBarDate.DayOfYear
+                        If spannedDayCount < 0 Then
+                            spannedDayCount = spannedDayCount + 365
+                        End If
                     End If
 
                     If CurrentBar.High >= high.Y Then high = New Point(CurrentBar.Number, CurrentBar.High)
@@ -723,7 +729,7 @@ Namespace AnalysisTechniques
                                     .RangeText.VerticalAlignment = LabelVerticalAlignment.Bottom
                                 End If
                                 .RangeText.Location = rangetextPoint
-                                .RangeText.Text = Round(GetDollarValue(high.Y - low.Y), 0)
+                                .RangeText.Text = Round(GetDollarValue(high.Y - low.Y), 0) / 10
                             End If
                         End With
                     End If

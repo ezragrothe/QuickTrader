@@ -158,8 +158,10 @@
     End Sub
     Public Overrides Sub ParentMouseRightButtonDown(ByVal e As System.Windows.Input.MouseButtonEventArgs, ByVal location As System.Windows.Point)
         MyBase.ParentMouseRightButtonDown(e, location)
-        If Parent.mainCanvas.ContextMenu IsNot Nothing Then ctx = Parent.mainCanvas.ContextMenu
-        Parent.mainCanvas.ContextMenu = Nothing
+        If Parent IsNot Nothing Then
+            If Parent.mainCanvas.ContextMenu IsNot Nothing Then ctx = Parent.mainCanvas.ContextMenu
+            Parent.mainCanvas.ContextMenu = Nothing
+        End If
         'Parent.maincanvas 
         'IsSelected = True
     End Sub

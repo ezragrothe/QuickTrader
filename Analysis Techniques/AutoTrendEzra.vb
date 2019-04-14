@@ -513,12 +513,12 @@ Namespace AnalysisTechniques
             abc.ALine.Pen = New Pen(New SolidColorBrush(col), SwingLineThickness)
             abc.BLine.Pen = New Pen(New SolidColorBrush(col), SwingLineThickness)
             abc.CLine.Pen = New Pen(New SolidColorBrush(col), SwingLineThickness)
-            If abc.ALengthText Is Nothing Then abc.ALengthText = NewLabel("", SwingChannelColor, New Point(0, 0), True, , True)
-            If abc.BLengthText Is Nothing Then abc.BLengthText = NewLabel("", SwingChannelColor, New Point(0, 0), True, , True)
-            If abc.CLengthText Is Nothing Then abc.CLengthText = NewLabel("", SwingChannelColor, New Point(0, 0), True, , True)
-            abc.ALengthText.IsSelectable = False : abc.ALengthText.IsEditable = False
-            abc.BLengthText.IsSelectable = False : abc.BLengthText.IsEditable = False
-            abc.CLengthText.IsSelectable = False : abc.CLengthText.IsEditable = False
+            If abc.ALengthText Is Nothing Then CreateSwingLengthText(abc.ALengthText)
+            If abc.BLengthText Is Nothing Then CreateSwingLengthText(abc.BLengthText)
+            If abc.CLengthText Is Nothing Then CreateSwingLengthText(abc.CLengthText)
+            'abc.ALengthText.IsSelectable = False : abc.ALengthText.IsEditable = False
+            'abc.BLengthText.IsSelectable = False : abc.BLengthText.IsEditable = False
+            'abc.CLengthText.IsSelectable = False : abc.CLengthText.IsEditable = False
             abc.ALengthText.VerticalAlignment = If(direction = Direction.Up, LabelVerticalAlignment.Bottom, LabelVerticalAlignment.Top)
             abc.BLengthText.VerticalAlignment = If(direction = Direction.Up, LabelVerticalAlignment.Top, LabelVerticalAlignment.Bottom)
             abc.CLengthText.VerticalAlignment = If(direction = Direction.Up, LabelVerticalAlignment.Bottom, LabelVerticalAlignment.Top)
@@ -548,12 +548,18 @@ Namespace AnalysisTechniques
             Else
                 If PriceVsBarMode = PriceRVMode.PriceRVMode Then
                     abc.ALengthText.Text = If(abc.A.Y - abc.B.Y = 0, "", FormatNumberLengthAndPrefix(Abs(abc.A.Y - abc.B.Y), Chart.Settings("DecimalPlaces").Value))
+                    abc.ALengthText.Tag = Abs(abc.A.Y - abc.B.Y)
                     abc.BLengthText.Text = If(abc.B.Y - abc.C.Y = 0, "", FormatNumberLengthAndPrefix(Abs(abc.B.Y - abc.C.Y), Chart.Settings("DecimalPlaces").Value))
+                    abc.BLengthText.Tag = Abs(abc.B.Y - abc.C.Y)
                     abc.CLengthText.Text = If(abc.D.Y - abc.C.Y = 0, "", FormatNumberLengthAndPrefix(Abs(abc.C.Y - abc.D.Y), Chart.Settings("DecimalPlaces").Value))
+                    abc.CLengthText.Tag = Abs(abc.C.Y - abc.D.Y)
                 Else
                     abc.ALengthText.Text = If(abc.B.X - abc.A.X = 0, "", CStr(abc.B.X - abc.A.X))
+                    abc.ALengthText.Tag = Abs(abc.B.X - abc.A.X)
                     abc.BLengthText.Text = If(abc.C.X - abc.B.X = 0, "", CStr(abc.C.X - abc.B.X))
+                    abc.BLengthText.Tag = Abs(abc.C.X - abc.B.X)
                     abc.CLengthText.Text = If(abc.D.X - abc.C.X = 0, "", CStr(abc.D.X - abc.C.X))
+                    abc.CLengthText.Tag = Abs(abc.D.X - abc.C.X)
                 End If
             End If
         End Sub
@@ -587,8 +593,39 @@ Namespace AnalysisTechniques
                     End If
                     Chart.ReApplyAnalysisTechnique(Me)
                 End Sub
+            AddHandler lbl.RightMouseDown,
+                Sub(sender As Object)
+                    If PriceVsBarMode = PriceRVMode.PriceRVMode Then
+                        PriceRV = CDec(CType(sender, Label).Tag)
+                    ElseIf PriceVsBarMode = PriceRVMode.BarCountMode Then
+                        BarCountRV = CDec(CType(sender, Label).Tag)
+                    End If
+                    Chart.ReApplyAnalysisTechnique(Me)
+                End Sub
             lbl.Font.FontSize = LengthTextFontSize2
             lbl.Font.FontWeight = LengthTextFontWeight2
+        End Sub
+        Private Sub CreateSwingLengthText(ByRef lbl As Label)
+            lbl = NewLabel("", SwingChannelColor, New Point(0, 0), True, , True)
+
+            AddHandler lbl.MouseDown,
+                Sub(sender As Object, location As Point)
+                    If PriceVsBarMode = PriceRVMode.PriceRVMode Then
+                        PriceRV = CDec(CType(sender, Label).Tag) + Chart.GetMinTick
+                    ElseIf PriceVsBarMode = PriceRVMode.BarCountMode Then
+                        BarCountRV = CDec(CType(sender, Label).Tag) + 1
+                    End If
+                    Chart.ReApplyAnalysisTechnique(Me)
+                End Sub
+            AddHandler lbl.RightMouseDown,
+                Sub(sender As Object)
+                    If PriceVsBarMode = PriceRVMode.PriceRVMode Then
+                        PriceRV = CDec(CType(sender, Label).Tag)
+                    ElseIf PriceVsBarMode = PriceRVMode.BarCountMode Then
+                        BarCountRV = CDec(CType(sender, Label).Tag)
+                    End If
+                    Chart.ReApplyAnalysisTechnique(Me)
+                End Sub
         End Sub
         Protected Overrides Sub Main_WithIntraBarMoves()
             'If lastTick <> 0 And EnableEzraLayout Then

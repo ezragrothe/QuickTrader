@@ -97,9 +97,9 @@
                 range1.Location = FloorP(New Point(box1.X + box1.Width, box1.Y))
                 range2.Location = FloorP(New Point(box2.X + box2.Width, box2.Y))
                 range3.Location = FloorP(New Point(box3.X + box3.Width, box3.Y))
-                range1.Text = Round(box1.Height, 2) * 1000
-                range2.Text = Round(box2.Height, 2) * 1000
-                range3.Text = Round(box3.Height, 2) * 1000
+                range1.Text = Round(box1.Height, 2) * 100
+                range2.Text = Round(box2.Height, 2) * 100
+                range3.Text = Round(box3.Height, 2) * 100
             End If
         End Sub
         Private Sub BoxMouseDown(sender As Object, location As Point)
@@ -198,9 +198,9 @@
             range1.Location = FloorP(New Point(box1.X + box1.Width, box1.Y))
             range2.Location = FloorP(New Point(box2.X + box2.Width, box2.Y))
             range3.Location = FloorP(New Point(box3.X + box3.Width, box3.Y))
-            range1.Text = Round(box1.Height, 2) * 1000
-            range2.Text = Round(box2.Height, 2) * 1000
-            range3.Text = Round(box3.Height, 2) * 1000
+            range1.Text = Round(box1.Height, 2) * 100
+            range2.Text = Round(box2.Height, 2) * 100
+            range3.Text = Round(box3.Height, 2) * 100
         End Sub
         Sub Box1Left()
             box1.Location = NegateY(Chart.GetRelativeFromReal(VectorToPoint(location - mouseOffset1)))
